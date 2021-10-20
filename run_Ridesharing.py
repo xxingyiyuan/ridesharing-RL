@@ -18,11 +18,12 @@ train_bais = 30.0
 def train():
     total_steps = 0
     episodes = 1000
+    epi_maxUti = []
     for i in range(1, episodes):
         observation = env.resetEnv()
         step = 0
         maxUti = 0
-        while step < 300:
+        while step < 1800:
             total_steps += 1
             step += 1
             # choose action by epsilon-greedy policy
@@ -35,13 +36,13 @@ def train():
             # update model
             if total_steps >= train_bais and total_steps % train_base == 0:
                 RL.learn()
-            if sum(observation_) > maxUti:
-                maxUti = sum(observation_)
+            curPassUti = env.getPassTotalUtility()
+            if curPassUti > maxUti:
+                maxUti = curPassUti
                 print('episodes: {}, action:{}, steps: {}, maxUti: {}, totalSteps: {}'.format(
                     i, action, step, maxUti, total_steps))
-
             observation = observation_
-
+        epi_maxUti.append(maxUti)
 
 if __name__ == '__main__':
     train()

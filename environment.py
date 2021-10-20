@@ -1,4 +1,6 @@
 import re
+
+from numpy.core.fromnumeric import put
 from generalRequest import Generator
 import random
 import pandas as pd
@@ -24,6 +26,7 @@ class Environment:
         self.initParticipants()
         self.candidateActions, self.candidateTable = Tool.getCandidateActions(
             self.drivers, self.passengers)
+        self.passUti = 0
         
 
     def initDemands(self, waitTime, detourRatio):
@@ -73,14 +76,17 @@ class Environment:
         self.coalitions = {}
         for d in self.drivers:
             self.coalitions[d.id] = Coalition(d)
-        self.initAssignment()
-        self.auctioneer.auction(self.drivers, self.coalitions)
-        self.observation = self.getObservation()
+        # self.initAssignment()
+        # self.auctioneer.auction(self.drivers, self.coalitions)
         return self.getObservation()
 
     def getObservation(self):
-        utiList = [p.getUtility() for p in self.passengers]
-        return np.array(utiList)
+        obs = [p.driverId for p in self.passengers]
+        return np.array(obs)
+    
+    def getPassTotalUtility(self):
+        pUti = [p.getUtility() for p in self.passengers]
+        return sum(pUti)
 
     def step(self, action) -> tuple:
         # return: (observation_, reward, done)
@@ -90,7 +96,7 @@ class Environment:
         cur_driverId = passenger.driverId
         # no execution
         if cur_driverId == target_driverId:
-            return (self.observation, 0, False)
+            return (self.getObservation(), 0, False)
         # get coalition
         if cur_driverId:
             cur_coalition = self.coalitions[cur_driverId]
@@ -101,14 +107,14 @@ class Environment:
             flag = target_coalition.addPassenger(passenger)
             # break constraints
             if flag == False:
-                return (self.observation, -10, False)
+                return (self.getObservation(), -1, False)
             else:
                 self.auctioneer.auction(self.drivers, self.coalitions)
                 observation_ = self.getObservation()
-                reward = (sum(observation_) - sum(self.observation))*100
+                reward = self.getPassTotalUtility() - self.passUti
+                self.passUti = self.getPassTotalUtility()
                 if reward == 0:
                     reward = 100
-                self.observation = observation_
                 
                 return (observation_, reward, False)
         # case 2 leave: cur_driverId != 0 and target_driverId == 0, remove passenger from cur_driverId
@@ -116,13 +122,8 @@ class Environment:
             cur_coalition.removePassenger(passenger)
             self.auctioneer.auction(self.drivers, self.coalitions)
             observation_ = self.getObservation()
-            reward = sum(observation_) - sum(self.observation)
-            if reward < 0:
-                reward = -100
-            else:
-                reward += 100
-            
-            self.observation = observation_
+            reward = self.getPassTotalUtility() - self.passUti
+            self.passUti = self.getPassTotalUtility()
             return (observation_, reward, False)
         # case 3 switch: cur_driverId != 0 and target_driverId != 0, remove passenger from cur_driverId and add passenger to target_driverId
         else:
@@ -130,20 +131,11 @@ class Environment:
             flag = target_coalition.addPassenger(passenger)
             self.auctioneer.auction(self.drivers, self.coalitions)
             observation_ = self.getObservation()
-            reward = sum(observation_) - sum(self.observation)
-            if reward > 0:
-                reward +=100
-            self.observation = observation_
-
+            reward = self.getPassTotalUtility() - self.passUti
+            self.passUti = self.getPassTotalUtility()
             return (observation_, reward, False)
 
-        # determine winning passengers and drivers, and calculate payments and payoffs for them
-
-        # observation_ = self.getObservation()
-        # reward = sum(observation_) - sum(self.observation)
-        # print('reward:{}'.format(reward))
-        # self.observation = observation_
-        # return (observation_, reward, )
+      
 
     def initAssignment(self):
         matching = [[44, 73, 94, 146], [205], [182], [551], [362, 596], [12, 32], [93], [192, 386], [119, 148, 394], [481], [0], [98, 135, 538], [25, 250], [6, 296], [16], [153], [187], [586], [0], [562], [27, 274, 315], [300], [0], [64, 85, 400], [407], [454], [246, 531], [143, 306, 323], [107, 558], [2, 48, 443], [8, 176, 543, 553], [430], [10, 82, 101], [288, 392], [336], [0], [99, 368, 487], [164], [75, 217], [0], [0], [134, 509], [0], [239, 401], [351], [103, 109, 415], [0], [22, 79, 145], [14], [127, 201], [467], [140], [0], [468], [185], [90, 224], [199, 223], [29], [45, 387, 527], [0], [211], [0], [151, 163], [50, 520], [0], [462], [363], [0], [338, 482], [0], [0], [116], [326], [599], [275, 552], [194, 264, 374], [55, 208, 261], [0], [345, 472], [0], [501], [230], [0], [0], [0], [396], [168, 235, 441], [9, 51, 175], [183], [354, 554], [293], [343, 380, 413], [258], [245, 337, 423], [49, 234, 450], [28, 154, 594], [0], [303, 564], [0], [0], [203, 381], [33, 123, 124, 314], [373], [0], [72, 212, 575], [11, 104, 395, 479], [0], [62, 142, 352], [31, 42], [444], [169, 474, 503], [133, 328], [102, 196, 197, 310], [389], [0], [580], [318, 397], [0], [0], [243, 279, 366], [581], [43, 66], [557], [76, 78, 80, 170], [92, 184, 302], [129, 237], [416], [188, 312], [0], [0], [0], [0], [0], [0], [414, 571, 574], [0], [0], [18, 391, 399], [5, 206], [0], [207, 324], [178], [202, 402, 461], [232], [
