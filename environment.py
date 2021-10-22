@@ -27,7 +27,6 @@ class Environment:
         self.candidateActions, self.candidateTable = Tool.getCandidateActions(
             self.drivers, self.passengers)
         self.passUti = 0
-        
 
     def initDemands(self, waitTime, detourRatio):
         # initialize demands
@@ -43,18 +42,17 @@ class Environment:
         # self.passengers_demand = G.generateRequests(
         #     total_num=self.passengers_num, isRandom=True, detourRatio=detourRatio, waitTime=waitTime)
 
-        drivers_df = pd.read_table('./requests_300_1.txt', sep=' ', header=None, names=[
+        drivers_df = pd.read_table('./requests_50_1.txt', sep=' ', header=None, names=[
                                    'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
         drivers_df['seatNum'] = 5
         drivers_df['detourRatio'] = detourRatio
-        passengers_df = pd.read_table('./requests_600_1.txt', sep=' ', header=None, names=[
+        passengers_df = pd.read_table('./requests_100_1.txt', sep=' ', header=None, names=[
                                       'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
-        passengers_df['seatNum'] = np.array([2,2,2,1,1,1,1,1,2,2,1,2,1,1,2,2,2,2,1,1,2,2,2,2,1,2,2,1,1,2,2,1,1,2,1,2,2,2,2,2,2,1,2,1,2,2,1,2,1,2,2,2,1,1,1,1,1,1,1,2,1,1,2,1,2,2,2,1,1,2,1,2,2,2,2,1,2,1,2,2,2,1,2,2,2,2,2,1,2,1,1,2,2,1,1,1,1,2,1,1,2,2,2,1,2,1,2,2,1,1,2,2,2,2,2,1,1,2,1,1,1,2,1,1,2,1,2,1,1,1,1,2,1,1,2,2,2,1,2,2,1,2,1,2,1,1,1,2,2,1,1,1,2,2,1,2,2,1,2,1,2,1,2,1,1,1,1,1,1,1,1,1,2,1,1,1,1,2,2,2,2,2,1,2,2,2,1,2,2,1,1,1,2,2,2,1,1,2,2,1,1,2,1,1,1,2,2,2,2,2,2,2,2,1,1,2,1,2,2,2,2,1,2,1,2,2,1,2,1,2,1,1,1,1,2,2,2,2,2,2,1,2,2,1,2,1,1,1,2,2,1,1,1,2,2,2,2,2,2,1,2,2,2,1,2,2,1,1,2,2,2,2,1,1,1,2,1,1,1,1,1,1,1,2,1,2,1,2,1,2,2,2,2,2,2,2,2,1,2,1,2,1,1,1,1,1,1,2,1,1,2,2,2,1,1,1,2,2,1,1,2,2,2,2,1,1,2,2,2,1,2,2,2,1,1,1,1,1,2,2,1,1,2,1,2,1,1,1,2,2,2,1,2,1,1,1,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,2,1,2,1,2,1,1,1,1,2,2,2,1,1,2,1,2,1,1,2,1,2,1,1,1,1,2,1,1,2,1,2,2,1,2,2,1,1,2,1,2,2,1,1,2,1,2,1,1,1,1,1,2,1,1,1,2,1,2,2,2,2,1,1,1,2,2,1,2,1,2,1,2,1,1,1,2,2,2,1,1,1,2,2,2,1,1,2,1,2,2,1,1,2,2,2,2,1,2,2,2,1,1,2,1,2,2,1,2,2,1,2,2,2,2,1,1,1,1,1,1,1,1,1,2,1,2,1,2,2,1,2,2,1,2,2,2,1,1,1,2,2,1,2,2,1,2,2,2,2,2,1,1,1,2,1,2,2,2,2,1,1,1,2,2,1,1,2,2,2,1,2,2,2,2,1,1,2,1,2,2,1,1,1,1,2,1,1,2,1,1,2,1,1,1,1,2,2,2,1,1,2,1,1,2,1,2,1,1,1,1,2,2,1,2,2,1,1,1,2,2,2,1,2,1,1,2,2,2])
+        passengers_df['seatNum'] = 1
         passengers_df['detourRatio'] = detourRatio
         passengers_df['waitTime'] = waitTime
         self.drivers_demand = drivers_df
         self.passengers_demand = passengers_df
-
 
     def initParticipants(self):
         drivers_demand = [tuple(de)
@@ -71,19 +69,20 @@ class Environment:
 
     def resetEnv(self):
         # initialize drivers and passengers
-        self.initParticipants()  
+        self.initParticipants()
         # initialize coalitions
         self.coalitions = {}
         for d in self.drivers:
             self.coalitions[d.id] = Coalition(d)
         # self.initAssignment()
         # self.auctioneer.auction(self.drivers, self.coalitions)
-        return self.getObservation()
+        return self.getObservation(), self.getPassTotalUtility()
 
     def getObservation(self):
         obs = [p.driverId for p in self.passengers]
+        # obs = [d.sPassengerNum for d in self.drivers]
         return np.array(obs)
-    
+
     def getPassTotalUtility(self):
         pUti = [p.getUtility() for p in self.passengers]
         return sum(pUti)
@@ -107,15 +106,18 @@ class Environment:
             flag = target_coalition.addPassenger(passenger)
             # break constraints
             if flag == False:
-                return (self.getObservation(), -1, False)
+                if self.drivers[target_driverId-1].sPassengerNum == 0:
+                    reward = -1000
+                else:
+                    reward = -10
+                return (self.getObservation(), reward, False)
             else:
                 self.auctioneer.auction(self.drivers, self.coalitions)
                 observation_ = self.getObservation()
                 reward = self.getPassTotalUtility() - self.passUti
                 self.passUti = self.getPassTotalUtility()
                 if reward == 0:
-                    reward = 100
-                
+                    reward = 10
                 return (observation_, reward, False)
         # case 2 leave: cur_driverId != 0 and target_driverId == 0, remove passenger from cur_driverId
         elif cur_driverId != 0 and target_driverId == 0:
@@ -123,19 +125,22 @@ class Environment:
             self.auctioneer.auction(self.drivers, self.coalitions)
             observation_ = self.getObservation()
             reward = self.getPassTotalUtility() - self.passUti
+            if reward == 0:
+                reward = -10
             self.passUti = self.getPassTotalUtility()
             return (observation_, reward, False)
         # case 3 switch: cur_driverId != 0 and target_driverId != 0, remove passenger from cur_driverId and add passenger to target_driverId
         else:
             cur_coalition.removePassenger(passenger)
             flag = target_coalition.addPassenger(passenger)
+            # leave
+
             self.auctioneer.auction(self.drivers, self.coalitions)
             observation_ = self.getObservation()
-            reward = self.getPassTotalUtility() - self.passUti
+
+            reward = (self.getPassTotalUtility() - self.passUti)*10
             self.passUti = self.getPassTotalUtility()
             return (observation_, reward, False)
-
-      
 
     def initAssignment(self):
         matching = [[44, 73, 94, 146], [205], [182], [551], [362, 596], [12, 32], [93], [192, 386], [119, 148, 394], [481], [0], [98, 135, 538], [25, 250], [6, 296], [16], [153], [187], [586], [0], [562], [27, 274, 315], [300], [0], [64, 85, 400], [407], [454], [246, 531], [143, 306, 323], [107, 558], [2, 48, 443], [8, 176, 543, 553], [430], [10, 82, 101], [288, 392], [336], [0], [99, 368, 487], [164], [75, 217], [0], [0], [134, 509], [0], [239, 401], [351], [103, 109, 415], [0], [22, 79, 145], [14], [127, 201], [467], [140], [0], [468], [185], [90, 224], [199, 223], [29], [45, 387, 527], [0], [211], [0], [151, 163], [50, 520], [0], [462], [363], [0], [338, 482], [0], [0], [116], [326], [599], [275, 552], [194, 264, 374], [55, 208, 261], [0], [345, 472], [0], [501], [230], [0], [0], [0], [396], [168, 235, 441], [9, 51, 175], [183], [354, 554], [293], [343, 380, 413], [258], [245, 337, 423], [49, 234, 450], [28, 154, 594], [0], [303, 564], [0], [0], [203, 381], [33, 123, 124, 314], [373], [0], [72, 212, 575], [11, 104, 395, 479], [0], [62, 142, 352], [31, 42], [444], [169, 474, 503], [133, 328], [102, 196, 197, 310], [389], [0], [580], [318, 397], [0], [0], [243, 279, 366], [581], [43, 66], [557], [76, 78, 80, 170], [92, 184, 302], [129, 237], [416], [188, 312], [0], [0], [0], [0], [0], [0], [414, 571, 574], [0], [0], [18, 391, 399], [5, 206], [0], [207, 324], [178], [202, 402, 461], [232], [
@@ -151,4 +156,4 @@ class Environment:
 
 if __name__ == '__main__':
 
-    Env = Environment(drivers_num=300, passengers_num=600, waitTime=2)
+    Env = Environment(drivers_num=50, passengers_num=100, waitTime=2)
