@@ -10,7 +10,9 @@ gym: 0.8.0
 
 import numpy as np
 import tensorflow as tf
-
+import matplotlib
+matplotlib.use('tkAgg')
+import matplotlib.pyplot as plt
 
 np.random.seed(1)
 tf.compat.v1.set_random_seed(1)
@@ -142,8 +144,8 @@ class DQNPrioritizedReplay:
             learning_rate=0.005,
             reward_decay=0.9,
             e_greedy=0.9,
-            replace_target_iter=100,
-            memory_size=2000,
+            replace_target_iter=200,
+            memory_size=10000,
             batch_size=128,
             e_greedy_increment=None,
             output_graph=False,
@@ -255,7 +257,7 @@ class DQNPrioritizedReplay:
             self.memory[index, :] = transition
             self.memory_counter += 1
 
-    def choose_action(self, observation, candidateActions):
+    def choose_action(self, observation):
         
         observation = observation[np.newaxis, :]
         if np.random.uniform() < self.epsilon:
@@ -263,8 +265,8 @@ class DQNPrioritizedReplay:
                 self.q_eval, feed_dict={self.s: observation})
             action = np.argmax(actions_value)
         else:
-            # action = np.random.randint(0, self.n_actions)
-            action = int(np.random.choice(candidateActions,size=1))
+            action = np.random.randint(0, self.n_actions)
+            # action = int(np.random.choice(candidateActions,size=1))
         return action
 
     def learn(self):
@@ -306,7 +308,20 @@ class DQNPrioritizedReplay:
                                                     self.q_target: q_target})
 
         self.cost_his.append(self.cost)
-
         self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
         # self.epsilon = self.epsilon - 0.0001 if self.epsilon > 0.1 else 0.1
         self.learn_step_counter += 1
+
+    def plot_cost(self,cost):
+        
+        plt.plot(np.arange(len(cost)), cost)
+        plt.ylabel('Cost')
+        plt.xlabel('training steps')
+        plt.show()
+
+    def plot_utility(self,utility):
+        
+        plt.plot(np.arange(len(utility)),utility)
+        plt.ylabel('utility')
+        plt.xlabel('steps')
+        plt.show()
