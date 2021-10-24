@@ -8,14 +8,14 @@ n_actions = len(env.candidateActions)
 n_features = passengers_num
 MEMORY_SIZE = 10000
 RL = DQNPrioritizedReplay(
-    n_actions=n_actions, n_features=n_features, learning_rate=0.005, reward_decay=0.9, e_greedy=0.9, e_greedy_increment=0.00005, memory_size=MEMORY_SIZE)
-train_base = 5
+    n_actions=n_actions, n_features=n_features, learning_rate=0.005, reward_decay=0.9, e_greedy=0.9, e_greedy_increment=0.00001, memory_size=MEMORY_SIZE)
+train_base = 20
 train_bais = MEMORY_SIZE
 
 
 def train():
     total_steps = 0
-    episodes = 5
+    episodes = 200
     epi_maxUti = []
     opt_stepUti = None
     opt = 0
@@ -49,7 +49,7 @@ def train():
             else:
                 count += 1
 
-            if count > 5000:
+            if count > n_actions:
 
                 if maxUti > opt:
                     opt = maxUti
@@ -64,6 +64,7 @@ def train():
     print(epi_maxUti)
     RL.plot_cost(RL.cost_his)
     RL.plot_utility(opt_stepUti)
+    RL.plot_utility(epi_maxUti)
 
 
 if __name__ == '__main__':
