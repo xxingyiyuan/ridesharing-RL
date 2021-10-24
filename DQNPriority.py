@@ -146,7 +146,7 @@ class DQNPrioritizedReplay:
             e_greedy=0.9,
             replace_target_iter=200,
             memory_size=10000,
-            batch_size=128,
+            batch_size=64,
             e_greedy_increment=None,
             output_graph=False,
             prioritized=True,

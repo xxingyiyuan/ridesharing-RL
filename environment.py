@@ -113,18 +113,13 @@ class Environment:
             flag = target_coalition.addPassenger(passenger)
             # break constraints
             if flag == False:
-                if self.drivers[target_driverId-1].sPassengerNum == 0:
-                    reward = -1000
-                else:
-                    reward = -10
+                reward = -100
                 return (self.getObservation(), reward, False)
             else:
                 # join
                 self.auctioneer.auction(self.drivers, self.coalitions)
                 observation_ = self.getObservation()
                 reward = (self.getPassTotalUtility() - self.passUti)
-                if reward == 0:
-                    reward = 10
                 self.passUti = self.getPassTotalUtility()
                 return (observation_, reward, False)
         # case 2 leave: cur_driverId != 0 and target_driverId == 0, remove passenger from cur_driverId
@@ -133,8 +128,6 @@ class Environment:
             self.auctioneer.auction(self.drivers, self.coalitions)
             observation_ = self.getObservation()
             reward = (self.getPassTotalUtility() - self.passUti)
-            if reward == 0:
-                reward = -10
             self.passUti = self.getPassTotalUtility()
             return (observation_, reward, False)
         # case 3 switch: cur_driverId != 0 and target_driverId != 0, remove passenger from cur_driverId and add passenger to target_driverId

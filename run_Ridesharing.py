@@ -17,8 +17,8 @@ def train():
     total_steps = 0
     episodes = 5
     epi_maxUti = []
+    opt_stepUti = None
     opt = 0
-    
 
     for i in range(episodes):
         observation, curPassUti = env.resetEnv()
@@ -26,7 +26,6 @@ def train():
         maxUti = 0
         count = 0
         stepUti = []
-        stepCost = [] 
         while True:
 
             total_steps += 1
@@ -37,35 +36,34 @@ def train():
             # execute action
             observation_, reward, flag = env.step(action)
             RL.store_transition(
-                    observation, actionIndex, reward, observation_)
+                observation, actionIndex, reward, observation_)
             # update model
             if total_steps >= train_bais and total_steps % train_base == 0:
                 RL.learn()
-                stepCost.append(RL.cost)
 
             curPassUti = env.getPassTotalUtility()
+            stepUti.append(curPassUti)
             if curPassUti > maxUti:
                 count = 0
                 maxUti = curPassUti
-                if maxUti > opt:
-                    opt = maxUti
-                # print('episodes: {}, action:{}, steps: {}, curPassUti: {}, maxUti: {}, totalSteps: {}, opt: {}'.format(i, action, step, curPassUti, maxUti, total_steps, opt))
             else:
                 count += 1
-            stepUti.append(curPassUti)
 
             if count > 5000:
+
+                if maxUti > opt:
+                    opt = maxUti
+                    opt_stepUti = stepUti
                 print('episodes: {}, steps: {}, maxUti: {}, totalSteps: {}, opt: {}'.format(
                     i, step, maxUti, total_steps, opt))
                 break
             observation = observation_
-        RL.plot_cost(stepCost)
-        RL.plot_utility(stepUti)
+
         epi_maxUti.append(maxUti)
 
     print(epi_maxUti)
     RL.plot_cost(RL.cost_his)
-    RL.plot_utility(epi_maxUti)
+    RL.plot_utility(opt_stepUti)
 
 
 if __name__ == '__main__':
