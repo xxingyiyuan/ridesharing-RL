@@ -38,22 +38,22 @@ class Environment:
 
         # total_num, isRandom, detourRatio, waitTime=None
         
-        self.drivers_demand = G.generateRequests(
-            total_num=self.drivers_num, isRandom=False, detourRatio=detourRatio, waitTime=None)
-        self.passengers_demand = G.generateRequests(
-            total_num=self.passengers_num, isRandom=True, detourRatio=detourRatio, waitTime=waitTime)
+        # self.drivers_demand = G.generateRequests(
+        #     total_num=self.drivers_num, isRandom=False, detourRatio=detourRatio, waitTime=None)
+        # self.passengers_demand = G.generateRequests(
+        #     total_num=self.passengers_num, isRandom=True, detourRatio=detourRatio, waitTime=waitTime)
 
-        # drivers_df = pd.read_table('./requests_50_1.txt', sep=' ', header=None, names=[
-        #                            'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
-        # drivers_df['seatNum'] = 5
-        # drivers_df['detourRatio'] = detourRatio
-        # passengers_df = pd.read_table('./requests_100_1.txt', sep=' ', header=None, names=[
-        #                               'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
-        # passengers_df['seatNum'] = 1
-        # passengers_df['detourRatio'] = detourRatio
-        # passengers_df['waitTime'] = waitTime
-        # self.drivers_demand = drivers_df
-        # self.passengers_demand = passengers_df
+        drivers_df = pd.read_table('./requests_50_1.txt', sep=' ', header=None, names=[
+                                   'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
+        drivers_df['seatNum'] = 5
+        drivers_df['detourRatio'] = detourRatio
+        passengers_df = pd.read_table('./requests_100_1.txt', sep=' ', header=None, names=[
+                                      'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
+        passengers_df['seatNum'] = 1
+        passengers_df['detourRatio'] = detourRatio
+        passengers_df['waitTime'] = waitTime
+        self.drivers_demand = drivers_df
+        self.passengers_demand = passengers_df
 
     def initParticipants(self):
         drivers_demand = [tuple(de)
@@ -114,7 +114,7 @@ class Environment:
             flag = target_coalition.addPassenger(passenger)
             # break constraints
             if flag == False:
-                reward = -100
+                reward = -1000
                 return (self.getObservation(), reward, False)
             else:
                 # join
