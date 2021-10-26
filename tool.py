@@ -27,7 +27,7 @@ class Tool:
                     canDri.append(j)
                     candidateActions.append(M*i + j)
             cadidateTable.append(canDri)
-        print('candidateActions:{}'.format(len(candidateActions)))
+       
         return candidateActions, cadidateTable
 
     @classmethod
