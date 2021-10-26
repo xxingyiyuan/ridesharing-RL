@@ -1,7 +1,9 @@
 import math
 import numpy as np
 from settings import SPEED, RADIUS
-
+import matplotlib
+matplotlib.use('tkAgg')
+import matplotlib.pyplot as plt
 
 class Tool:
     @classmethod
@@ -14,9 +16,9 @@ class Tool:
     @classmethod
     def getCandidateActions(cls, driList, passList):
         M = len(driList) + 1
-        n = len(passList)
-        candidateActions = [M*i for i in range(n)]
-        # candidateActions = []
+        # n = len(passList)
+        # candidateActions = [M*i for i in range(n)]
+        candidateActions = []
         cadidateTable = []
         for i, passenger in enumerate(passList):
             canDri = []
@@ -43,6 +45,18 @@ class Tool:
         if sharedDist > (1+driver.getDetourRatio())*driver.iDist:
             return False
         return True
+
+    @classmethod
+    def plotData(cls, data, labels: tuple):
+        plt.figure(str(labels))
+        plt.plot(data)
+        plt.xlabel(labels[0])
+        plt.ylabel(labels[1])
+    
+    @classmethod
+    def pltShow(cls):
+        plt.show()
+        
 
 
 if __name__ == '__main__':

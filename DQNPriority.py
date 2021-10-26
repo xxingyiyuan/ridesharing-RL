@@ -10,9 +10,7 @@ gym: 0.8.0
 
 import numpy as np
 import tensorflow as tf
-import matplotlib
-matplotlib.use('tkAgg')
-import matplotlib.pyplot as plt
+
 
 np.random.seed(1)
 tf.compat.v1.set_random_seed(1)
@@ -312,16 +310,5 @@ class DQNPrioritizedReplay:
         # self.epsilon = self.epsilon - 0.0001 if self.epsilon > 0.1 else 0.1
         self.learn_step_counter += 1
 
-    def plot_cost(self,cost):
-        
-        plt.plot(np.arange(len(cost)), cost)
-        plt.ylabel('Cost')
-        plt.xlabel('training steps')
-        plt.show()
 
-    def plot_utility(self,utility):
         
-        plt.plot(np.arange(len(utility)),utility)
-        plt.ylabel('utility')
-        plt.xlabel('steps')
-        plt.show()

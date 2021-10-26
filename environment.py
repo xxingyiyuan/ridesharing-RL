@@ -1,8 +1,4 @@
-import re
-
-from numpy.core.fromnumeric import put
 from generalRequest import Generator
-import random
 import pandas as pd
 import numpy as np
 import settings
@@ -26,7 +22,9 @@ class Environment:
         self.initParticipants()
         self.candidateActions, self.candidateTable = Tool.getCandidateActions(
             self.drivers, self.passengers)
-        self.passUti = 0
+        # self.initAssignment()
+        self.passUti = self.getPassTotalUtility()
+        self.totalReward = []
 
     def initDemands(self, waitTime, detourRatio):
         # initialize demands
@@ -37,7 +35,7 @@ class Environment:
         # np.random.seed(self.seed)
 
         # total_num, isRandom, detourRatio, waitTime=None
-        
+
         # self.drivers_demand = G.generateRequests(
         #     total_num=self.drivers_num, isRandom=False, detourRatio=detourRatio, waitTime=None)
         # self.passengers_demand = G.generateRequests(
@@ -60,22 +58,21 @@ class Environment:
                           for de in self.drivers_demand.values]
         self.drivers = [Driver(id, de)
                         for id, de in enumerate(drivers_demand, start=1)]
-        # print(self.drivers[0])
+
         passengers_demand = [tuple(de)
                              for de in self.passengers_demand.values]
         self.passengers = [Passenger(id, de)
                            for id, de in enumerate(passengers_demand, start=1)]
-
-        # print(self.passengers[0])
-
-    def resetEnv(self):
-        # initialize drivers and passengers
-        self.initParticipants()
-        # initialize coalitions
+        # initialize coalition
         self.coalitions = {}
         for d in self.drivers:
             self.coalitions[d.id] = Coalition(d)
+
+    def resetEnv(self):
+        # reset drivers and passengers
+        self.initParticipants()
         # self.initAssignment()
+        self.passUti = self.getPassTotalUtility()
         return self.getObservation(), self.getPassTotalUtility()
 
     def initAssignment(self):
@@ -103,7 +100,9 @@ class Environment:
         cur_driverId = passenger.driverId
         # no execution
         if cur_driverId == target_driverId:
-            return (self.getObservation(), 0, False)
+            reward = -50
+            self.totalReward.append(reward)
+            return (self.getObservation(), reward, False)
         # get coalition
         if cur_driverId:
             cur_coalition = self.coalitions[cur_driverId]
@@ -114,13 +113,15 @@ class Environment:
             flag = target_coalition.addPassenger(passenger)
             # break constraints
             if flag == False:
-                reward = -1000
+                reward = -50
+                self.totalReward.append(reward)
                 return (self.getObservation(), reward, False)
             else:
                 # join
                 self.auctioneer.auction(self.drivers, self.coalitions)
                 observation_ = self.getObservation()
-                reward = (self.getPassTotalUtility() - self.passUti)*10
+                reward = (self.getPassTotalUtility() - self.passUti)
+                self.totalReward.append(reward)
                 self.passUti = self.getPassTotalUtility()
                 return (observation_, reward, False)
         # case 2 leave: cur_driverId != 0 and target_driverId == 0, remove passenger from cur_driverId
@@ -128,7 +129,8 @@ class Environment:
             cur_coalition.removePassenger(passenger)
             self.auctioneer.auction(self.drivers, self.coalitions)
             observation_ = self.getObservation()
-            reward = (self.getPassTotalUtility() - self.passUti)*10
+            reward = (self.getPassTotalUtility() - self.passUti)
+            self.totalReward.append(reward)
             self.passUti = self.getPassTotalUtility()
             return (observation_, reward, False)
         # case 3 switch: cur_driverId != 0 and target_driverId != 0, remove passenger from cur_driverId and add passenger to target_driverId
@@ -137,7 +139,8 @@ class Environment:
             flag = target_coalition.addPassenger(passenger)
             self.auctioneer.auction(self.drivers, self.coalitions)
             observation_ = self.getObservation()
-            reward = (self.getPassTotalUtility() - self.passUti)*10
+            reward = (self.getPassTotalUtility() - self.passUti)
+            self.totalReward.append(reward)
             self.passUti = self.getPassTotalUtility()
             return (observation_, reward, False)
 
