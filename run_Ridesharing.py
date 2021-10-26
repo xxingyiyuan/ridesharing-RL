@@ -8,18 +8,18 @@ n_actions = len(env.candidateActions)
 n_features = passengers_num
 MEMORY_SIZE = 10000
 RL = DQNPrioritizedReplay(
-    n_actions=n_actions, n_features=n_features, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9, e_greedy_increment=None, memory_size=MEMORY_SIZE)
-train_base = 20
+    n_actions=n_actions, n_features=n_features, learning_rate=0.01, reward_decay=0.9, e_greedy=0.7, e_greedy_increment=None, memory_size=MEMORY_SIZE)
+train_base = 50
 train_bais = MEMORY_SIZE
 
 # 
 def train():
     total_steps = 0
-    episodes = 100
+    episodes = 50
     epi_maxUti = []
     opt_stepUti = None
     opt = 0
-    maxStep = 5000
+    maxStep = 2000
 
     for i in range(episodes):
         observation, curPassUti = env.resetEnv()
