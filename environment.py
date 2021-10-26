@@ -41,11 +41,11 @@ class Environment:
         # self.passengers_demand = G.generateRequests(
         #     total_num=self.passengers_num, isRandom=True, detourRatio=detourRatio, waitTime=waitTime)
 
-        drivers_df = pd.read_table('./requests_50_1.txt', sep=' ', header=None, names=[
+        drivers_df = pd.read_table('./data/driver_requests_{}_1.txt'.format(self.drivers_num), sep=' ', header=None, names=[
                                    'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
         drivers_df['seatNum'] = 5
         drivers_df['detourRatio'] = detourRatio
-        passengers_df = pd.read_table('./requests_100_1.txt', sep=' ', header=None, names=[
+        passengers_df = pd.read_table('./data/passenger_requests_{}_1.txt'.format(self.passengers_num), sep=' ', header=None, names=[
                                       'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
         passengers_df['seatNum'] = 1
         passengers_df['detourRatio'] = detourRatio
