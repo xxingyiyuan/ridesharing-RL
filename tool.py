@@ -16,9 +16,8 @@ class Tool:
     @classmethod
     def getCandidateActions(cls, driList, passList):
         M = len(driList) + 1
-        # n = len(passList)
-        # candidateActions = [M*i for i in range(n)]
-        candidateActions = []
+        n = len(passList)
+        candidateActions = [M*i for i in range(n)]
         cadidateTable = []
         for i, passenger in enumerate(passList):
             canDri = []

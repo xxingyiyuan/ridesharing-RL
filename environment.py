@@ -24,7 +24,7 @@ class Environment:
             self.drivers, self.passengers)
         # self.initAssignment()
         self.passUti = self.getPassTotalUtility()
-        self.totalReward = []
+        self.passWindow = np.zeros(self.passengers_num)
 
     def initDemands(self, waitTime, detourRatio):
         # initialize demands
@@ -71,6 +71,7 @@ class Environment:
     def resetEnv(self):
         # reset drivers and passengers
         self.initParticipants()
+        self.passWindow = np.zeros(self.passengers_num)
         # self.initAssignment()
         self.passUti = self.getPassTotalUtility()
         return self.getObservation(), self.getPassTotalUtility()
@@ -84,65 +85,62 @@ class Environment:
         self.auctioneer.auction(self.drivers, self.coalitions)
 
     def getObservation(self):
-        obs = [p.driverId for p in self.passengers]
+        # obs = [p.driverId for p in self.passengers]
         # obs = [d.sPassengerNum for d in self.drivers]
-        return np.array(obs)
+        # return np.array(obs)
+        return self.passWindow
 
     def getPassTotalUtility(self):
         pUti = [p.getUtility() for p in self.passengers]
         return sum(pUti)
+
+    def getVaildIndex(self):
+        # the index of assigned passengers
+        invalidPassIndex = np.where(self.passWindow != 0)[0]
+        invalidAction = [passIndex*self.M for passIndex in invalidPassIndex]
+        for passIndex in invalidPassIndex:
+            for driverId in self.candidateTable[passIndex]:
+                action = passIndex*self.M + driverId
+                invalidAction.append(action)
+        invalidAction = list(set(invalidAction))
+        candidateIndex = []
+        for i, action in enumerate(self.candidateActions):
+            if action in invalidAction:
+                continue
+            candidateIndex.append(i) 
+        return candidateIndex
 
     def step(self, action) -> tuple:
         # return: (observation_, reward, done)
         passengerIndex = int(action/self.M)
         passenger = self.passengers[passengerIndex]
         target_driverId = int(action % self.M)
-        cur_driverId = passenger.driverId
-        # no execution
-        if cur_driverId == target_driverId:
-            reward = -50
-            self.totalReward.append(reward)
-            return (self.getObservation(), reward, False)
-        # get coalition
-        if cur_driverId:
-            cur_coalition = self.coalitions[cur_driverId]
-        if target_driverId:
+        # no execution cur_driverId = target_driverId = 0
+        if target_driverId == 0:
+            reward = 1
+            self.passWindow[passengerIndex] = 1
+        else:
+            #join: cur_driverId == 0 and target_driverId != 0 add passenger to target_driverId
             target_coalition = self.coalitions[target_driverId]
-        # case 1 join: cur_driverId == 0 and target_driverId != 0 add passenger to target_driverId
-        if cur_driverId == 0 and target_driverId != 0:
             flag = target_coalition.addPassenger(passenger)
             # break constraints
             if flag == False:
                 reward = -50
-                self.totalReward.append(reward)
-                return (self.getObservation(), reward, False)
+                # self.passWindow[passengerIndex] = 1
+                return (self.getObservation(), reward, 2)
             else:
                 # join
                 self.auctioneer.auction(self.drivers, self.coalitions)
-                observation_ = self.getObservation()
                 reward = (self.getPassTotalUtility() - self.passUti)
-                self.totalReward.append(reward)
+                if reward == 0:
+                    reward = 2
                 self.passUti = self.getPassTotalUtility()
-                return (observation_, reward, False)
-        # case 2 leave: cur_driverId != 0 and target_driverId == 0, remove passenger from cur_driverId
-        elif cur_driverId != 0 and target_driverId == 0:
-            cur_coalition.removePassenger(passenger)
-            self.auctioneer.auction(self.drivers, self.coalitions)
-            observation_ = self.getObservation()
-            reward = (self.getPassTotalUtility() - self.passUti)
-            self.totalReward.append(reward)
-            self.passUti = self.getPassTotalUtility()
-            return (observation_, reward, False)
-        # case 3 switch: cur_driverId != 0 and target_driverId != 0, remove passenger from cur_driverId and add passenger to target_driverId
-        else:
-            cur_coalition.removePassenger(passenger)
-            flag = target_coalition.addPassenger(passenger)
-            self.auctioneer.auction(self.drivers, self.coalitions)
-            observation_ = self.getObservation()
-            reward = (self.getPassTotalUtility() - self.passUti)
-            self.totalReward.append(reward)
-            self.passUti = self.getPassTotalUtility()
-            return (observation_, reward, False)
+                self.passWindow[passengerIndex] = 1
+
+        done = 0 not in self.passWindow
+        observation_ = self.getObservation()
+        return (observation_, reward, done)
+        
 
 
 if __name__ == '__main__':

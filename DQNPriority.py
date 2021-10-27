@@ -255,17 +255,20 @@ class DQNPrioritizedReplay:
             self.memory[index, :] = transition
             self.memory_counter += 1
 
-    def choose_action(self, observation):
+    def choose_action(self, observation, validIndex):
         
         observation = observation[np.newaxis, :]
         if np.random.uniform() < self.epsilon:
             actions_value = self.sess.run(
                 self.q_eval, feed_dict={self.s: observation})
-            action = np.argmax(actions_value)
+            # ignore the invaild action, choose action from candidate actions
+            # action = np.argmax(actions_value)
+            validValue = actions_value[0][validIndex]
+            actionIndex = validIndex[np.argmax(validValue)]
         else:
-            action = np.random.randint(0, self.n_actions)
-            # action = int(np.random.choice(candidateActions,size=1))
-        return action
+            # action = np.random.randint(0, self.n_actions)
+            actionIndex = int(np.random.choice(validIndex,size=1))
+        return actionIndex
 
     def learn(self):
         if self.learn_step_counter % self.replace_target_iter == 0:
