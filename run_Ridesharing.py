@@ -1,4 +1,5 @@
 from DQNPriority import DQNPrioritizedReplay
+from DoubleDQN import DoubleDQN
 from environment import Environment
 from tool import Tool
 import numpy as np
@@ -6,12 +7,16 @@ import numpy as np
 drivers_num, passengers_num = 5, 10
 env = Environment(drivers_num=drivers_num, passengers_num=passengers_num)
 n_actions = len(env.candidateActions)
-n_features = passengers_num + 1
+n_features = passengers_num
+# RL = DoubleDQN(
+#     n_actions=n_actions, n_features=n_features, learning_rate=0.001,
+#     e_greedy_increment=None, double_q=True)
 MEMORY_SIZE = 3000
 RL = DQNPrioritizedReplay(
-    n_actions=n_actions, n_features=n_features, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9, e_greedy_increment=0.001, memory_size=MEMORY_SIZE)
-train_base = 10
+    n_actions=n_actions, n_features=n_features, learning_rate=0.0002, reward_decay=0.9, e_greedy=0.9, e_greedy_increment=0.0002, memory_size=MEMORY_SIZE)
+train_base = 3
 train_bais = MEMORY_SIZE
+
 # (driver_num, passenger_num) initassignment CFA
 # (5,10) 61.72 61.72, 62.78
 # (10, 20) 116 116, 120
@@ -22,7 +27,7 @@ train_bais = MEMORY_SIZE
 
 def train():
     total_steps = 0
-    episodes = 3000
+    episodes = 1000
     epi_lastUti = []
     epi_maxUti = []
     epi_accumuReward = []
@@ -34,16 +39,17 @@ def train():
         observation, curPassUti = env.resetEnv()
         step = 0
         maxUti = 0
-        observation = np.append(observation, step)
+        # observation = np.append(observation, step)
         accumuReward = 0
+
         while True:
-            validIndex = env.getVaildIndex()
             # choose action by epsilon-greedy policy
+            validIndex = env.candidateIndex
             actionIndex = RL.choose_action(observation, validIndex)
             action = env.candidateActions[actionIndex]
             # execute action
             observation_, reward, flag = env.step(action)
-            observation_ = np.append(observation_, step)
+            # observation_ = np.append(observation_, step)
             # store transition
             RL.store_transition(
                 observation, actionIndex, reward, observation_)
@@ -52,12 +58,15 @@ def train():
                 RL.learn()
             total_steps += 1
             step += 1
+
             curPassUti = env.getPassTotalUtility()
             if curPassUti > maxUti:
                 maxUti = curPassUti
             accumuReward += reward
 
             if flag == 2:
+                print('episodes: {}, steps: {}, lastUti: {}, accumuReward: {}, totalSteps: {}, opt: {}'.format(
+                    i, step, curPassUti, accumuReward, total_steps, opt))
                 break
             if flag == 1:
                 if maxUti > opt:
@@ -71,11 +80,12 @@ def train():
                 break
             observation = observation_
 
+    Tool.plotData(epi_accumuReward, ('episode', 'accumureward'))
     Tool.plotData(RL.cost_his, ('step', 'cost'))
     # Tool.plotData(epi_step, ('episode', 'steps'))
     # Tool.plotData(epi_maxUti, ('episode', 'maxUti'))
-    Tool.plotData(epi_lastUti, ('episode', 'lastUti'))
-    Tool.plotData(epi_accumuReward, ('episode', 'accumureward'))
+    # Tool.plotData(epi_lastUti, ('episode', 'lastUti'))
+    
     Tool.pltShow()
 
 

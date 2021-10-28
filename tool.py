@@ -1,9 +1,10 @@
+import matplotlib.pyplot as plt
 import math
 import numpy as np
 from settings import SPEED, RADIUS
 import matplotlib
 matplotlib.use('tkAgg')
-import matplotlib.pyplot as plt
+
 
 class Tool:
     @classmethod
@@ -19,14 +20,14 @@ class Tool:
         n = len(passList)
         candidateActions = [M*i for i in range(n)]
         cadidateTable = []
-        for i, passenger in enumerate(passList):
+        for passIndex, passenger in enumerate(passList):
             canDri = []
-            for j, driver in enumerate(driList, start=1):
+            for driverId, driver in enumerate(driList, start=1):
                 if cls.judgeConstraint(passenger, driver):
-                    canDri.append(j)
-                    candidateActions.append(M*i + j)
+                    canDri.append(driverId)
+                    candidateActions.append(M*passIndex + driverId)
             cadidateTable.append(canDri)
-       
+
         return candidateActions, cadidateTable
 
     @classmethod
@@ -51,11 +52,10 @@ class Tool:
         plt.plot(data)
         plt.xlabel(labels[0])
         plt.ylabel(labels[1])
-    
+
     @classmethod
     def pltShow(cls):
         plt.show()
-        
 
 
 if __name__ == '__main__':

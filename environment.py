@@ -22,7 +22,10 @@ class Environment:
         self.initParticipants()
         self.candidateActions, self.candidateTable = Tool.getCandidateActions(
             self.drivers, self.passengers)
-        # self.initAssignment()
+        self.candidateIndex = [i for i in range(len(self.candidateActions))]
+        self.actionMap = {}
+        for (i, action) in enumerate(self.candidateActions):
+            self.actionMap[action] = i
         self.passUti = self.getPassTotalUtility()
         self.passWindow = np.zeros(self.passengers_num)
 
@@ -72,7 +75,7 @@ class Environment:
         # reset drivers and passengers
         self.initParticipants()
         self.passWindow = np.zeros(self.passengers_num)
-        # self.initAssignment()
+        self.candidateIndex = [i for i in range(len(self.candidateActions))]
         self.passUti = self.getPassTotalUtility()
         return self.getObservation(), self.getPassTotalUtility()
 
@@ -85,10 +88,11 @@ class Environment:
         self.auctioneer.auction(self.drivers, self.coalitions)
 
     def getObservation(self):
-        # obs = [p.driverId for p in self.passengers]
+        
         # obs = [d.sPassengerNum for d in self.drivers]
-        # return np.array(obs)
-        return self.passWindow
+        obs = [p.driverId for p in self.passengers]
+        return np.array(obs)
+        # return self.passWindow
 
     def getPassTotalUtility(self):
         pUti = [p.getUtility() for p in self.passengers]
@@ -117,7 +121,7 @@ class Environment:
         target_driverId = int(action % self.M)
         # no execution cur_driverId = target_driverId = 0
         if target_driverId == 0:
-            reward = 1
+            reward = 0
             self.passWindow[passengerIndex] = 1
         else:
             #join: cur_driverId == 0 and target_driverId != 0 add passenger to target_driverId
@@ -132,15 +136,24 @@ class Environment:
                 # join
                 self.auctioneer.auction(self.drivers, self.coalitions)
                 reward = (self.getPassTotalUtility() - self.passUti)
-                if reward == 0:
-                    reward = 2
                 self.passUti = self.getPassTotalUtility()
                 self.passWindow[passengerIndex] = 1
-
+        if self.passWindow[passengerIndex] == 1:
+            self.updateValidIndex(passengerIndex)
         done = 0 not in self.passWindow
         observation_ = self.getObservation()
         return (observation_, reward, done)
         
+
+    def updateValidIndex(self, passIndex):
+        invalidAction = [passIndex*self.M]
+        for driverId in self.candidateTable[passIndex]:
+            invalidAction.append(passIndex*self.M + driverId)
+        for action in invalidAction:
+            actionIndex = self.actionMap[action]
+            if actionIndex in self.candidateIndex:
+                self.candidateIndex.remove(actionIndex)
+
 
 
 if __name__ == '__main__':
