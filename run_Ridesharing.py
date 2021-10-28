@@ -8,10 +8,10 @@ env = Environment(drivers_num=drivers_num, passengers_num=passengers_num)
 n_actions = len(env.candidateActions)
 n_features = passengers_num
 
-MEMORY_SIZE = 5000
+MEMORY_SIZE = 10000
 RL = DQNPrioritizedReplay(
     n_actions=n_actions, n_features=n_features, learning_rate=0.0002, reward_decay=0.9, e_greedy=0.9, e_greedy_increment=0.00005, memory_size=MEMORY_SIZE)
-train_base = 5
+train_base = 10
 train_bais = MEMORY_SIZE
 
 # (driver_num, passenger_num) initassignment CFA

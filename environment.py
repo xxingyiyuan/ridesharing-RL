@@ -2,6 +2,7 @@ from generalRequest import Generator
 import pandas as pd
 import numpy as np
 import settings
+import random
 from driver import Driver
 from passenger import Passenger
 from coalition import Coalition
@@ -38,15 +39,18 @@ class Environment:
         # np.random.seed(self.seed)
 
         # total_num, isRandom, detourRatio, waitTime=None
-
+        st0 = np.random.get_state()
+        seed = np.random.set_state(st0)
+        random.seed(seed)
+        np.random.seed(seed)
         self.drivers_demand = G.generateRequests(
             total_num=self.drivers_num, isRandom=False, detourRatio=detourRatio, waitTime=None)
         self.passengers_demand = G.generateRequests(
             total_num=self.passengers_num, isRandom=True, detourRatio=detourRatio, waitTime=waitTime)
         self.drivers_demand.to_csv('driver_requests_{}_{}.txt'.format(
-            self.drivers_num, 2), sep=' ', header=None, index=False)
+            self.drivers_num, 6), sep=' ', header=None, index=False)
         self.passengers_demand.to_csv('passenger_requests_{}_{}.txt'.format(
-            self.passengers_num, 2), sep=' ', header=None, index=False)
+            self.passengers_num, 6), sep=' ', header=None, index=False)
         # drivers_df = pd.read_table('./data/driver_requests_{}_1.txt'.format(self.drivers_num), sep=' ', header=None, names=[
         #                            'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
         # drivers_df['seatNum'] = 5
