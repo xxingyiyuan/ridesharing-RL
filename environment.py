@@ -43,7 +43,10 @@ class Environment:
             total_num=self.drivers_num, isRandom=False, detourRatio=detourRatio, waitTime=None)
         self.passengers_demand = G.generateRequests(
             total_num=self.passengers_num, isRandom=True, detourRatio=detourRatio, waitTime=waitTime)
-
+        self.drivers_demand.to_csv('driver_requests_{}_{}.txt'.format(
+            self.drivers_num, 2), sep=' ', header=None, index=False)
+        self.passengers_demand.to_csv('passenger_requests_{}_{}.txt'.format(
+            self.passengers_num, 2), sep=' ', header=None, index=False)
         # drivers_df = pd.read_table('./data/driver_requests_{}_1.txt'.format(self.drivers_num), sep=' ', header=None, names=[
         #                            'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
         # drivers_df['seatNum'] = 5
@@ -88,7 +91,7 @@ class Environment:
         self.auctioneer.auction(self.drivers, self.coalitions)
 
     def getObservation(self):
-        
+
         # obs = [d.sPassengerNum for d in self.drivers]
         # obs = [p.driverId for p in self.passengers]
         # return np.array(obs)
@@ -111,7 +114,7 @@ class Environment:
         for i, action in enumerate(self.candidateActions):
             if action in invalidAction:
                 continue
-            candidateIndex.append(i) 
+            candidateIndex.append(i)
         return candidateIndex
 
     def step(self, action) -> tuple:
@@ -124,7 +127,7 @@ class Environment:
             reward = 0
             self.passWindow[passengerIndex] = 1
         else:
-            #join: cur_driverId == 0 and target_driverId != 0 add passenger to target_driverId
+            # join: cur_driverId == 0 and target_driverId != 0 add passenger to target_driverId
             target_coalition = self.coalitions[target_driverId]
             flag = target_coalition.addPassenger(passenger)
             # break constraints
@@ -143,7 +146,6 @@ class Environment:
         done = 0 not in self.passWindow
         observation_ = self.getObservation()
         return (observation_, reward, done)
-        
 
     def updateValidIndex(self, passIndex):
         invalidAction = [passIndex*self.M]
@@ -153,7 +155,6 @@ class Environment:
             actionIndex = self.actionMap[action]
             if actionIndex in self.candidateIndex:
                 self.candidateIndex.remove(actionIndex)
-
 
 
 if __name__ == '__main__':
