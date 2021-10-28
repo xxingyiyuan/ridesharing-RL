@@ -4,14 +4,14 @@ from environment import Environment
 from tool import Tool
 import numpy as np
 
-drivers_num, passengers_num = 10, 20
+drivers_num, passengers_num = 30, 60
 env = Environment(drivers_num=drivers_num, passengers_num=passengers_num)
 n_actions = len(env.candidateActions)
 n_features = passengers_num
 
 MEMORY_SIZE = 5000
 RL = DQNPrioritizedReplay(
-    n_actions=n_actions, n_features=n_features, learning_rate=0.0002, reward_decay=0.9, e_greedy=0.9, e_greedy_increment=0.0002, memory_size=MEMORY_SIZE)
+    n_actions=n_actions, n_features=n_features, learning_rate=0.0002, reward_decay=0.9, e_greedy=0.9, e_greedy_increment=0.00005, memory_size=MEMORY_SIZE)
 train_base = 3
 train_bais = MEMORY_SIZE
 
