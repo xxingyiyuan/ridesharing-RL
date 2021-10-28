@@ -90,9 +90,9 @@ class Environment:
     def getObservation(self):
         
         # obs = [d.sPassengerNum for d in self.drivers]
-        obs = [p.driverId for p in self.passengers]
-        return np.array(obs)
-        # return self.passWindow
+        # obs = [p.driverId for p in self.passengers]
+        # return np.array(obs)
+        return self.passWindow
 
     def getPassTotalUtility(self):
         pUti = [p.getUtility() for p in self.passengers]

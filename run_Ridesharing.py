@@ -4,14 +4,12 @@ from environment import Environment
 from tool import Tool
 import numpy as np
 
-drivers_num, passengers_num = 5, 10
+drivers_num, passengers_num = 10, 20
 env = Environment(drivers_num=drivers_num, passengers_num=passengers_num)
 n_actions = len(env.candidateActions)
 n_features = passengers_num
-# RL = DoubleDQN(
-#     n_actions=n_actions, n_features=n_features, learning_rate=0.001,
-#     e_greedy_increment=None, double_q=True)
-MEMORY_SIZE = 3000
+
+MEMORY_SIZE = 5000
 RL = DQNPrioritizedReplay(
     n_actions=n_actions, n_features=n_features, learning_rate=0.0002, reward_decay=0.9, e_greedy=0.9, e_greedy_increment=0.0002, memory_size=MEMORY_SIZE)
 train_base = 3
@@ -27,7 +25,7 @@ train_bais = MEMORY_SIZE
 
 def train():
     total_steps = 0
-    episodes = 1000
+    episodes = 5000
     epi_lastUti = []
     epi_maxUti = []
     epi_accumuReward = []
@@ -84,7 +82,7 @@ def train():
     Tool.plotData(RL.cost_his, ('step', 'cost'))
     # Tool.plotData(epi_step, ('episode', 'steps'))
     # Tool.plotData(epi_maxUti, ('episode', 'maxUti'))
-    # Tool.plotData(epi_lastUti, ('episode', 'lastUti'))
+    Tool.plotData(epi_lastUti, ('episode', 'lastUti'))
     
     Tool.pltShow()
 
