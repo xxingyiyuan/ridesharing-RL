@@ -3,8 +3,10 @@ from environment import Environment
 from tool import Tool
 import numpy as np
 
+file_num = 3
 drivers_num, passengers_num = 50, 100
-env = Environment(drivers_num=drivers_num, passengers_num=passengers_num)
+env = Environment(drivers_num=drivers_num,
+                  passengers_num=passengers_num, detourRatio=0.5, waitTime=2, file_num=file_num)
 n_actions = len(env.candidateActions)
 n_features = passengers_num
 
@@ -13,7 +15,7 @@ RL = DQNPrioritizedReplay(
     n_actions=n_actions, n_features=n_features, learning_rate=0.0002, reward_decay=0.9, e_greedy=0.9, e_greedy_increment=0.00005, memory_size=MEMORY_SIZE)
 train_base = 10
 train_bais = MEMORY_SIZE
-
+episodes = 20000
 # (driver_num, passenger_num) initassignment CFA
 # (5,10) 61.72 61.72, 62.78
 # (10, 20) 116 116, 120
@@ -24,11 +26,8 @@ train_bais = MEMORY_SIZE
 
 def train():
     total_steps = 0
-    episodes = 20000
-    epi_lastUti = []
     epi_maxUti = []
     epi_accumuReward = []
-    epi_step = []
     opt = 0
     print('candidateActions:{}'.format(len(env.candidateActions)))
 
@@ -68,21 +67,18 @@ def train():
             if flag == 1:
                 if maxUti > opt:
                     opt = maxUti
-                epi_lastUti.append(curPassUti)
                 epi_maxUti.append(maxUti)
                 epi_accumuReward.append(accumuReward)
-                epi_step.append(step)
                 print('episodes: {}, steps: {}, lastUti: {}, accumuReward: {}, totalSteps: {}, opt: {}'.format(
                     i, step, curPassUti, accumuReward, total_steps, opt))
                 break
             observation = observation_
 
-    Tool.plotData(epi_accumuReward, ('episode', 'accumureward'))
-    Tool.plotData(RL.cost_his, ('step', 'cost'))
-    # Tool.plotData(epi_step, ('episode', 'steps'))
+    Tool.plotData(epi_accumuReward, ('episode', 'accumureward'),
+                  'requests_{}_accumuReward'.format(file_num))
+    Tool.plotData(RL.cost_his, ('step', 'cost'),
+                  'requests_{}_cost'.format(file_num))
     # Tool.plotData(epi_maxUti, ('episode', 'maxUti'))
-    Tool.plotData(epi_lastUti, ('episode', 'lastUti'))
-    
     Tool.pltShow()
 
 

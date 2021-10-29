@@ -146,20 +146,16 @@ class Generator:
         df = df.round(5)
         return df
 
-    def generateRequests(self, total_num, isRandom, detourRatio, waitTime=None):
-        # 生成起点、终点
+    def generateRequests(self, total_num, flag):
+        # generate origins and destinations
         df = self.generateLocations(total_num)
-        # df.insert(0, 'id', np.arange(total_num))
-        # 生成seatNum
-        if isRandom:
+        # flag == 1: generate random number seats for passengers
+        if flag:
             seatNum = np.random.randint(1, 3, total_num)
+        # flag == 0: generate fixed number seats (seat = 5) for drivers
         else:
-            seatNum = np.ones(total_num)*5
+            seatNum = 5
         df['seatNum'] = seatNum
-        df['detourRatio'] = detourRatio
-        if waitTime != None:
-            df['waitTime'] = waitTime
-        
         return df
 
 

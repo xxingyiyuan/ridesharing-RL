@@ -13,13 +13,13 @@ G = Generator(*settings.beijingRange)
 
 
 class Environment:
-    def __init__(self, drivers_num, passengers_num, waitTime=5, detourRatio=0.5):
+    def __init__(self, drivers_num, passengers_num, file_num=0, waitTime=5, detourRatio=0.5):
         self.drivers_num = drivers_num
         self.passengers_num = passengers_num
         self.M = drivers_num + 1
         self.N = passengers_num
         self.auctioneer = Auctioneer()
-        self.initDemands(waitTime, detourRatio)
+        self.initDemands(waitTime, detourRatio, file_num)
         self.initParticipants()
         self.candidateActions, self.candidateTable = Tool.getCandidateActions(
             self.drivers, self.passengers)
@@ -30,38 +30,38 @@ class Environment:
         self.passUti = self.getPassTotalUtility()
         self.passWindow = np.zeros(self.passengers_num)
 
-    def initDemands(self, waitTime, detourRatio):
+    def initDemands(self, waitTime, detourRatio, file_num):
         # initialize demands
         # pickup_longitude  pickup_latitude  dropoff_longitude  dropoff_latitude  seatNum detourRatio waitTime
 
-        # self.seed = 1
-        # random.seed(self.seed)
-        # np.random.seed(self.seed)
+        # st0 = np.random.get_state()
+        # seed = np.random.set_state(st0)
+        # random.seed(seed)
+        # np.random.seed(seed)
+        # generate demands
+        # drivers_df = G.generateRequests(total_num=self.drivers_num, flag=0)
+        # passengers_df = G.generateRequests(
+        #     total_num=self.passengers_num, flag=1)
 
-        # total_num, isRandom, detourRatio, waitTime=None
-        st0 = np.random.get_state()
-        seed = np.random.set_state(st0)
-        random.seed(seed)
-        np.random.seed(seed)
-        self.drivers_demand = G.generateRequests(
-            total_num=self.drivers_num, isRandom=False, detourRatio=detourRatio, waitTime=None)
-        self.passengers_demand = G.generateRequests(
-            total_num=self.passengers_num, isRandom=True, detourRatio=detourRatio, waitTime=waitTime)
-        self.drivers_demand.to_csv('driver_requests_{}_{}.txt'.format(
-            self.drivers_num, 6), sep=' ', header=None, index=False)
-        self.passengers_demand.to_csv('passenger_requests_{}_{}.txt'.format(
-            self.passengers_num, 6), sep=' ', header=None, index=False)
-        # drivers_df = pd.read_table('./data/driver_requests_{}_1.txt'.format(self.drivers_num), sep=' ', header=None, names=[
-        #                            'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
-        # drivers_df['seatNum'] = 5
-        # drivers_df['detourRatio'] = detourRatio
-        # passengers_df = pd.read_table('./data/passenger_requests_{}_1.txt'.format(self.passengers_num), sep=' ', header=None, names=[
-        #                               'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
-        # passengers_df['seatNum'] = 1
-        # passengers_df['detourRatio'] = detourRatio
-        # passengers_df['waitTime'] = waitTime
-        # self.drivers_demand = drivers_df
-        # self.passengers_demand = passengers_df
+        # --------- store demands
+        # drivers_df.to_csv('driver_requests_{}_{}.txt'.format(
+        #     self.drivers_num, file_num), sep=' ', header=None, index=False)
+        # passengers_df.to_csv('passenger_requests_{}_{}.txt'.format(
+        #     self.passengers_num, file_num), sep=' ', header=None, index=False)
+
+        # --------- read demands from files
+        drivers_df = pd.read_table('./data/driver_requests_{}_{}.txt'.format(self.drivers_num, file_num), sep=' ',
+                                   header=None, names=['pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'seatNum'])
+        passengers_df = pd.read_table('./data/passenger_requests_{}_{}.txt'.format(self.passengers_num, file_num), sep=' ',
+                                      header=None, names=['pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'seatNum'])
+
+        # add detour and waitTime
+        drivers_df['detourRatio'] = detourRatio
+        passengers_df['detourRatio'] = detourRatio
+        passengers_df['waitTime'] = waitTime
+
+        self.drivers_demand = drivers_df
+        self.passengers_demand = passengers_df
 
     def initParticipants(self):
         drivers_demand = [tuple(de)

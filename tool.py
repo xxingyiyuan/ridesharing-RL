@@ -47,11 +47,12 @@ class Tool:
         return True
 
     @classmethod
-    def plotData(cls, data, labels: tuple):
+    def plotData(cls, data, labels: tuple, filename):
         plt.figure(str(labels))
         plt.plot(data)
         plt.xlabel(labels[0])
         plt.ylabel(labels[1])
+        plt.savefig('./figures/{}.jpg'.format(filename))
 
     @classmethod
     def pltShow(cls):
