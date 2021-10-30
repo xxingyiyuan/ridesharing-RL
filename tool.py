@@ -52,11 +52,16 @@ class Tool:
         plt.plot(data)
         plt.xlabel(labels[0])
         plt.ylabel(labels[1])
-        plt.savefig('./figures/{}.jpg'.format(filename))
+        # plt.savefig('./figures/{}.jpg'.format(filename))
 
     @classmethod
     def pltShow(cls):
         plt.show()
+    
+    @classmethod
+    def storeData(cls, data: list, filename):
+        data = np.array(data)
+        np.save('./data/data_result/{}.npy'.format(filename), data)
 
 
 if __name__ == '__main__':
