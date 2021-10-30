@@ -39,21 +39,21 @@ class Environment:
         random.seed(seed)
         np.random.seed(seed)
         # generate demands
-        drivers_df = G.generateRequests(total_num=self.drivers_num, flag=0)
-        passengers_df = G.generateRequests(
-            total_num=self.passengers_num, flag=1)
+        # drivers_df = G.generateRequests(total_num=self.drivers_num, flag=0)
+        # passengers_df = G.generateRequests(
+        #     total_num=self.passengers_num, flag=1)
 
         # --------- store demands
-        drivers_df.to_csv('driver_requests_{}_{}.txt'.format(
-            self.drivers_num, file_num), sep=' ', header=None, index=False)
-        passengers_df.to_csv('passenger_requests_{}_{}.txt'.format(
-            self.passengers_num, file_num), sep=' ', header=None, index=False)
+        # drivers_df.to_csv('./data/driver_requests/driver_requests_{}_{}.txt'.format(
+        #     self.drivers_num, file_num), sep=' ', header=None, index=False)
+        # passengers_df.to_csv('./data/passenger_requests/passenger_requests_{}_{}.txt'.format(
+        #     self.passengers_num, file_num), sep=' ', header=None, index=False)
 
         # --------- read demands from files
-        # drivers_df = pd.read_table('./data/driver_requests_{}_{}.txt'.format(self.drivers_num, file_num), sep=' ',
-        #                            header=None, names=['pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'seatNum'])
-        # passengers_df = pd.read_table('./data/passenger_requests_{}_{}.txt'.format(self.passengers_num, file_num), sep=' ',
-        #                               header=None, names=['pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'seatNum'])
+        drivers_df = pd.read_table('./data/driver_requests/driver_requests_{}_{}.txt'.format(self.drivers_num, file_num), sep=' ',
+                                   header=None, names=['pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'seatNum'])
+        passengers_df = pd.read_table('./data/passenger_requests/passenger_requests_{}_{}.txt'.format(self.passengers_num, file_num), sep=' ',
+                                      header=None, names=['pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'seatNum'])
 
         # add detour and waitTime
         drivers_df['detourRatio'] = detourRatio
