@@ -2,11 +2,12 @@ from DQNPriority import DQNPrioritizedReplay
 from environment import Environment
 from tool import Tool
 import numpy as np
+from tqdm import tqdm
 
 file_num = 3
-drivers_num, passengers_num = 50, 100
+drivers_num, passengers_num = 40, 80
 env = Environment(drivers_num=drivers_num,
-                  passengers_num=passengers_num, detourRatio=0.5, waitTime=2, file_num=file_num)
+                  passengers_num=passengers_num, detourRatio=0.5, waitTime=5, file_num=file_num)
 n_actions = len(env.candidateActions)
 n_features = passengers_num
 
@@ -31,7 +32,7 @@ def train():
     opt = 0
     print('candidateActions:{}'.format(len(env.candidateActions)))
 
-    for i in range(episodes):
+    for i in tqdm(range(episodes)):
         observation, curPassUti = env.resetEnv()
         step = 0
         maxUti = 0
@@ -61,19 +62,19 @@ def train():
             accumuReward += reward
 
             if flag == 2:
-                print('episodes: {}, steps: {}, lastUti: {}, accumuReward: {}, totalSteps: {}, opt: {}'.format(
-                    i, step, curPassUti, accumuReward, total_steps, opt))
+                # print('episodes: {}, steps: {}, lastUti: {}, accumuReward: {}, totalSteps: {}, opt: {}'.format(
+                    # i, step, curPassUti, accumuReward, total_steps, opt))
                 break
             if flag == 1:
                 if maxUti > opt:
                     opt = maxUti
                 epi_maxUti.append(maxUti)
                 epi_accumuReward.append(accumuReward)
-                print('episodes: {}, steps: {}, lastUti: {}, accumuReward: {}, totalSteps: {}, opt: {}'.format(
-                    i, step, curPassUti, accumuReward, total_steps, opt))
+                # print('episodes: {}, steps: {}, lastUti: {}, accumuReward: {}, totalSteps: {}, opt: {}'.format(
+                #     i, step, curPassUti, accumuReward, total_steps, opt))
                 break
             observation = observation_
-
+    print(opt)
     Tool.plotData(epi_accumuReward, ('episode', 'accumureward'),
                   'requests_{}_accumuReward'.format(file_num))
     Tool.plotData(RL.cost_his, ('step', 'cost'),

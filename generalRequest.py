@@ -22,6 +22,8 @@ class Generator:
 
         df = pd.read_table(filepath, sep=',', header=None, names=[
                            'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
+        # manhattan
+        # df = pd.read_table(filepath, sep=' ')
         # 获取经纬度范围内的数据
         df = df[(df['pickup_longitude'] > self.minX) &
                 (df['pickup_longitude'] < self.maxX)]
@@ -35,6 +37,10 @@ class Generator:
         dist = np.power(df['pickup_longitude'] - df['dropoff_longitude'], 2) + \
             np.power(df['pickup_latitude'] -
                      df['dropoff_latitude'], 2)
+        # manhattan
+        # df1 = df[dist > 0.00080].copy().sample(1000)
+        # 0.0007 beijing
+        # 0.0004 guangzhou
         df1 = df[dist > 0.0007].copy()
         self.computeProbability(df1)
 
