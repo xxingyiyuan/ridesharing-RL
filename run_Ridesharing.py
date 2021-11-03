@@ -4,7 +4,7 @@ from tool import Tool
 import numpy as np
 from tqdm import tqdm
 
-file_num = 9
+file_num = 10
 drivers_num, passengers_num = 40, 80
 env = Environment(drivers_num=drivers_num,
                   passengers_num=passengers_num, detourRatio=0.5, waitTime=5, file_num=file_num)
@@ -74,6 +74,7 @@ def train():
                 #     i, step, curPassUti, accumuReward, total_steps, opt))
                 break
             observation = observation_
+        
     print(opt)
     Tool.storeData(RL.cost_his, 'cost_{}'.format(file_num))
     Tool.storeData(epi_accumuReward, 'reward_{}'.format(file_num))
