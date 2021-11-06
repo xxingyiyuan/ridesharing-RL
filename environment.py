@@ -95,10 +95,11 @@ class Environment:
         self.auctioneer.auction(self.drivers, self.coalitions)
 
     def getObservation(self):
-
-        # obs = [d.sPassengerNum for d in self.drivers]
-        # obs = [p.driverId for p in self.passengers]
-        # return np.array(obs)
+        # obs_p1 = [p.driverId for p in self.passengers]
+        # obs_p2 = [p.getUtility() for p in self.passengers]
+        # obs_d = [d.sPassengerNum for d in self.drivers]
+        # return np.array(obs_p1 + obs_d)
+        # return np.array(obs_p1)
         return self.passWindow
 
     def getPassTotalUtility(self):

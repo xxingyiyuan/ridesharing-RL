@@ -75,7 +75,7 @@ def train():
                 break
             observation = observation_
         
-    print(opt)
+    print(opt,total_steps)
     Tool.storeData(RL.cost_his, 'cost_{}'.format(file_num))
     Tool.storeData(epi_accumuReward, 'reward_{}'.format(file_num))
     Tool.plotData(epi_accumuReward, ('Episode', 'Reward'),
