@@ -9,11 +9,11 @@ from coalition import Coalition
 from auctioneer import Auctioneer
 from tool import Tool
 # dataset
-G = Generator(*settings.beijingRange)
+G = Generator(*settings.newyorkRange)
 
 
 class Environment:
-    def __init__(self, drivers_num, passengers_num, file_num=0, waitTime=5, detourRatio=0.5):
+    def __init__(self, drivers_num, passengers_num, file_num=0, waitTime=4, detourRatio=0.5):
         self.drivers_num = drivers_num
         self.passengers_num = passengers_num
         self.M = drivers_num + 1

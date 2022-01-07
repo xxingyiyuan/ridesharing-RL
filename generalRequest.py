@@ -20,10 +20,10 @@ class Generator:
         self.probability_df = None
         self.pickup_counts = None
 
-        df = pd.read_table(filepath, sep=',', header=None, names=[
-                           'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
+        # df = pd.read_table(filepath, sep=',', header=None, names=[
+        #                    'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
         # manhattan
-        # df = pd.read_table(filepath, sep=' ')
+        df = pd.read_table(filepath, sep=' ')
         # 获取经纬度范围内的数据
         df = df[(df['pickup_longitude'] > self.minX) &
                 (df['pickup_longitude'] < self.maxX)]

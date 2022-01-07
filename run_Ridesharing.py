@@ -1,10 +1,10 @@
 from DQNPriority import DQNPrioritizedReplay
 from environment import Environment
 from tool import Tool
-import numpy as np
 from tqdm import tqdm
-
-file_num = 10
+import numpy as np
+from time import *
+file_num = 9
 drivers_num, passengers_num = 40, 80
 env = Environment(drivers_num=drivers_num,
                   passengers_num=passengers_num, detourRatio=0.5, waitTime=5, file_num=file_num)
@@ -31,14 +31,15 @@ def train():
     epi_accumuReward = []
     opt = 0
     print('candidateActions:{}'.format(len(env.candidateActions)))
-
+    epi_time = []
     for i in tqdm(range(episodes)):
+
         observation, curPassUti = env.resetEnv()
         step = 0
         maxUti = 0
         # observation = np.append(observation, step)
         accumuReward = 0
-
+        begin_time = time()
         while True:
             # choose action by epsilon-greedy policy
             validIndex = env.candidateIndex
@@ -68,22 +69,24 @@ def train():
             if flag == 1:
                 if maxUti > opt:
                     opt = maxUti
+                end_time = time()
+                epi_time.append(end_time - begin_time)
                 epi_maxUti.append(maxUti)
                 epi_accumuReward.append(accumuReward)
+
                 # print('episodes: {}, steps: {}, lastUti: {}, accumuReward: {}, totalSteps: {}, opt: {}'.format(
                 #     i, step, curPassUti, accumuReward, total_steps, opt))
                 break
             observation = observation_
-        
+    print(np.mean(epi_time))    
     print(opt,total_steps)
-    Tool.storeData(RL.cost_his, 'cost_{}'.format(file_num))
-    Tool.storeData(epi_accumuReward, 'reward_{}'.format(file_num))
-    Tool.plotData(epi_accumuReward, ('Episode', 'Reward'),
-                  'requests_{}_accumuReward'.format(file_num))
-    Tool.plotData(RL.cost_his, ('Step', 'Loss'),
-                  'requests_{}_cost'.format(file_num))
-    # Tool.plotData(epi_maxUti, ('episode', 'maxUti'))
-    Tool.pltShow()
+    # Tool.storeData(RL.cost_his, 'cost_{}'.format(file_num))
+    # Tool.storeData(epi_accumuReward, 'reward_{}'.format(file_num))
+    # Tool.plotData(epi_accumuReward, ('Episode', 'Reward'),
+    #               'requests_{}_accumuReward'.format(file_num))
+    # Tool.plotData(RL.cost_his, ('Step', 'Loss'),
+    #               'requests_{}_cost'.format(file_num))
+    # Tool.pltShow()
 
 
 if __name__ == '__main__':
