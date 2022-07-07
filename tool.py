@@ -18,6 +18,7 @@ class Tool:
     def getCandidateActions(cls, driList, passList):
         M = len(driList) + 1
         n = len(passList)
+        # 每个乘客不分配司机的action对应的编码
         candidateActions = [M*i for i in range(n)]
         cadidateTable = []
         for passIndex, passenger in enumerate(passList):
@@ -27,7 +28,7 @@ class Tool:
                     canDri.append(driverId)
                     candidateActions.append(M*passIndex + driverId)
             cadidateTable.append(canDri)
-
+        # candidateActions: 所有乘客动作集合, cadidateTable: 二维数组, 每个乘客对应的动作集合
         return candidateActions, cadidateTable
 
     @classmethod

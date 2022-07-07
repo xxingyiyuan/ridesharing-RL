@@ -21,13 +21,17 @@ class Environment:
         self.auctioneer = Auctioneer()
         self.initDemands(waitTime, detourRatio, file_num)
         self.initParticipants()
+        
         self.candidateActions, self.candidateTable = Tool.getCandidateActions(
             self.drivers, self.passengers)
+        # 这个是所有动作的索引
         self.candidateIndex = [i for i in range(len(self.candidateActions))]
+        # 动作编码和动作索引的映射
         self.actionMap = {}
         for (i, action) in enumerate(self.candidateActions):
             self.actionMap[action] = i
         self.passUti = self.getPassTotalUtility()
+        # 初始状态
         self.passWindow = np.zeros(self.passengers_num)
 
     def initDemands(self, waitTime, detourRatio, file_num):
@@ -86,13 +90,13 @@ class Environment:
         self.passUti = self.getPassTotalUtility()
         return self.getObservation(), self.getPassTotalUtility()
 
-    def initAssignment(self):
+    """ def initAssignment(self):
         for passIndex, canDri in enumerate(self.candidateTable):
             for driverId in canDri:
                 coalition = self.coalitions[driverId]
                 if coalition.addPassenger(self.passengers[passIndex]):
                     break
-        self.auctioneer.auction(self.drivers, self.coalitions)
+        self.auctioneer.auction(self.drivers, self.coalitions) """
 
     def getObservation(self):
         # obs_p1 = [p.driverId for p in self.passengers]
@@ -147,12 +151,14 @@ class Environment:
                 self.passUti = self.getPassTotalUtility()
                 self.passWindow[passengerIndex] = 1
         if self.passWindow[passengerIndex] == 1:
+            # 移除跟当前乘客的相关action
             self.updateValidIndex(passengerIndex)
         done = 0 not in self.passWindow
         observation_ = self.getObservation()
         return (observation_, reward, done)
 
     def updateValidIndex(self, passIndex):
+        # 无效的action
         invalidAction = [passIndex*self.M]
         for driverId in self.candidateTable[passIndex]:
             invalidAction.append(passIndex*self.M + driverId)

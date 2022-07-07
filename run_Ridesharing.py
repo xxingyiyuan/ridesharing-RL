@@ -17,13 +17,6 @@ RL = DQNPrioritizedReplay(
 train_base = 10
 train_bais = MEMORY_SIZE
 episodes = 20000
-# (driver_num, passenger_num) initassignment CFA
-# (5,10) 61.72 61.72, 62.78
-# (10, 20) 116 116, 120
-# (30, 60) 107 120 random: 159 (step: 1000), 157
-# (50, 100)
-# (300, 600) 2611 3033
-
 
 def train():
     total_steps = 0

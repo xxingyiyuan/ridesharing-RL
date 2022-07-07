@@ -23,16 +23,11 @@ class Auctioneer:
                                   (unitPayment, payoff), False)
                 continue
             # determine payments and payoffs
-            if i == coalitionNum - 1:
-                # / RATIO_EXCLUDE_PLATFORM_CHARGE
-                unitPayment = dri.askPrice / passNum
-            else:
-                for j in range(i+1, coalitionNum):
-                    if tmp_coalitions[j].unitBid*passNum*RATIO_EXCLUDE_PLATFORM_CHARGE >= dri.askPrice:
-                        unitPayment = tmp_coalitions[j].unitBid
-                    else:
-                        break
-
+            for j in range(i+1, coalitionNum):
+                if tmp_coalitions[j].unitBid*passNum*RATIO_EXCLUDE_PLATFORM_CHARGE >= dri.askPrice:
+                    unitPayment = tmp_coalitions[j].unitBid
+                else:
+                    break
             if unitPayment:
                 payoff = dri.askPrice
                 self.updateResult((coalition, dri),
