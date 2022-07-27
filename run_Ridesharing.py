@@ -25,7 +25,7 @@ def train():
     opt = 0
     print('candidateActions:{}'.format(len(env.candidateActions)))
     epi_time = []
-    for i in tqdm(range(episodes)):
+    for _ in tqdm(range(episodes)):
 
         observation, curPassUti = env.resetEnv()
         step = 0
