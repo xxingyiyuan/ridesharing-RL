@@ -12,14 +12,13 @@ class Coalition:
         # use for checking waitTime and detour constraints and updating shared distance
         self.route = Route(driver)
         self.curPassengers = []
-        self.unitBid = 0
 
-    def updateUnitBid(self):
+    def getUnitBid(self):
+        unitBid = 0
         if len(self.curPassengers):
             passengerBids = [p.budget for p in self.curPassengers]
-            self.unitBid = min(passengerBids)
-        else:
-            self.unitBid = 0
+            unitBid = min(passengerBids)
+        return unitBid
 
     def getPassengerNum(self):
         return len(self.curPassengers)
@@ -34,7 +33,6 @@ class Coalition:
         # add passenger
         if self.route.addPassenger(passenger):
             self.curPassengers.append(passenger)
-            self.updateUnitBid()
             self.updateParticipantInfos(passenger, 1)
             return True
         else:
@@ -42,7 +40,6 @@ class Coalition:
 
     def removePassenger(self, passenger: 'Passenger'):
         self.curPassengers.remove(passenger)
-        self.updateUnitBid()
         new_route = Route(self.driver)
         for p in self.curPassengers:
             new_route.addPassenger(p)

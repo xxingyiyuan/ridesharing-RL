@@ -20,10 +20,10 @@ class Generator:
         self.probability_df = None
         self.pickup_counts = None
 
-        # df = pd.read_table(filepath, sep=',', header=None, names=[
-        #                    'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
+        df = pd.read_table(filepath, sep=',', header=None, names=[
+                           'pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude'])
         # manhattan
-        df = pd.read_table(filepath, sep=' ')
+        # df = pd.read_table(filepath, sep=' ')
         # 获取经纬度范围内的数据
         df = df[(df['pickup_longitude'] > self.minX) &
                 (df['pickup_longitude'] < self.maxX)]
@@ -153,6 +153,15 @@ class Generator:
         return df
 
     def generateRequests(self, total_num, flag):
+        """generate demands (pickup_longitude, pickup_latitude, dropoff_longitude, dropoff_latitude, seatNum, detourRatio, waitTime)
+
+        Args:
+            total_num (int): the number of participants
+            flag (0 or 1): 0 for driver and 1 for passenger
+
+        Returns:
+            dataframe: demand of participants
+        """
         # generate origins and destinations
         df = self.generateLocations(total_num)
         # flag == 1: generate random number seats for passengers

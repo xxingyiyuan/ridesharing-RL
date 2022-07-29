@@ -18,10 +18,9 @@ class Environment:
         self.passengers_num = passengers_num
         self.M = drivers_num + 1
         self.N = passengers_num
-        self.auctioneer = Auctioneer()
         self.initDemands(waitTime, detourRatio, file_num)
         self.initParticipants()
-        
+
         self.candidateActions, self.candidateTable = Tool.getCandidateActions(
             self.drivers, self.passengers)
         # 这个是所有动作的索引
@@ -56,6 +55,7 @@ class Environment:
         # --------- read demands from files
         drivers_df = pd.read_table('./data/driver_requests/driver_requests_{}_{}.txt'.format(self.drivers_num, file_num), sep=' ',
                                    header=None, names=['pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'seatNum'])
+
         passengers_df = pd.read_table('./data/passenger_requests/passenger_requests_{}_{}.txt'.format(self.passengers_num, file_num), sep=' ',
                                       header=None, names=['pickup_longitude', 'pickup_latitude', 'dropoff_longitude', 'dropoff_latitude', 'seatNum'])
 
@@ -82,6 +82,8 @@ class Environment:
         for d in self.drivers:
             self.coalitions[d.id] = Coalition(d)
 
+        self.auctioneer = Auctioneer(self.drivers, self.coalitions)
+
     def resetEnv(self):
         # reset drivers and passengers
         self.initParticipants()
@@ -89,14 +91,6 @@ class Environment:
         self.candidateIndex = [i for i in range(len(self.candidateActions))]
         self.passUti = self.getPassTotalUtility()
         return self.getObservation(), self.getPassTotalUtility()
-
-    """ def initAssignment(self):
-        for passIndex, canDri in enumerate(self.candidateTable):
-            for driverId in canDri:
-                coalition = self.coalitions[driverId]
-                if coalition.addPassenger(self.passengers[passIndex]):
-                    break
-        self.auctioneer.auction(self.drivers, self.coalitions) """
 
     def getObservation(self):
         # obs_p1 = [p.driverId for p in self.passengers]
@@ -146,7 +140,7 @@ class Environment:
                 return (self.getObservation(), reward, 2)
             else:
                 # join
-                self.auctioneer.auction(self.drivers, self.coalitions)
+                self.auctioneer.auction()
                 reward = (self.getPassTotalUtility() - self.passUti)
                 self.passUti = self.getPassTotalUtility()
                 self.passWindow[passengerIndex] = 1
