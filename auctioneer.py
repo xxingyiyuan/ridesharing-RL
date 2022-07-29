@@ -41,6 +41,7 @@ class Auctioneer:
             else:
                 self.updateResult((coalition, dri),
                                   (unitPayment, payoff), False)
+        return self.getTotalUtility()
 
     # participants: (coalition, driver), price: (unitPayment, payoff), isWin
 
@@ -56,4 +57,9 @@ class Auctioneer:
         driver.isWin = isWin
         driver.payoff = payoff
 
-    
+    def getTotalUtility(self):
+        res = 0
+        for coalition in self.coalitions.values():
+            for p in coalition.curPassengers:
+                res += p.getUtility()
+        return res

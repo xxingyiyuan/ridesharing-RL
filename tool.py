@@ -32,6 +32,27 @@ class Tool:
         return candidateActions, cadidateTable
 
     @classmethod
+    def getCandidates(cls, driList, passList):
+        """_summary_
+
+        Args:
+            driList (list): drivers
+            passList (list): passengers
+
+        Returns:
+            dcaMat, pcaMat: candidates for each driver/passenger
+        """
+        M, N = len(driList), len(passList)
+        dcaMat = [[] for _ in range(M)]
+        pcaMat = [[] for _ in range(N)]
+        for passenger in passList:
+            for driver in driList:
+                if cls.judgeConstraint(passenger, driver):
+                    dcaMat[driver.id - 1].append(passenger)
+                    pcaMat[passenger.id - 1].append(driver)
+        return dcaMat, pcaMat
+
+    @classmethod
     def judgeConstraint(cls, passenger, driver) -> bool:
         # radium constraint for driver
         orgDist = cls.calNodeDist(driver.getOrg(), passenger.getOrg())
@@ -58,7 +79,7 @@ class Tool:
     @classmethod
     def pltShow(cls):
         plt.show()
-    
+
     @classmethod
     def storeData(cls, data: list, filename):
         data = np.array(data)
