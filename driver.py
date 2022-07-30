@@ -16,6 +16,9 @@ class Driver:
         self.payoff = 0
         self.isWin = False
 
+    def getCurDist(self):
+        return max(self.iDist, self.sDist)
+
     def getUtility(self):
         if self.isWin:
             return self.payoff - self.getdetourCost()

@@ -3,12 +3,14 @@ import pandas as pd
 import numpy as np
 import settings
 import random
+import copy
 from driver import Driver
 from passenger import Passenger
 from tool import Tool
 from algorithmCFA import AlgorithmCFA
+from algorithmOTMBM import AlgorithmOTMBM
 # dataset
-G = Generator(*settings.newyorkRange)
+G = Generator(*settings.guangzhouRange)
 
 
 def initDemands(waitTime, detourRatio, drivers_num, passengers_num, file_num=0, isSave=False):
@@ -61,7 +63,7 @@ def initDemands(waitTime, detourRatio, drivers_num, passengers_num, file_num=0, 
     return drivers_df, passengers_df
 
 
-def initParticipants(waitTime=4, detourRatio=0.5, drivers_num=40, passengers_num=80):
+def initParticipants(waitTime=4, detourRatio=0.5, drivers_num=50, passengers_num=100):
     """_summary_
 
     Args:
@@ -74,7 +76,7 @@ def initParticipants(waitTime=4, detourRatio=0.5, drivers_num=40, passengers_num
         _type_: _description_
     """
     drivers_df, passengers_df = initDemands(
-        waitTime, detourRatio, drivers_num, passengers_num, file_num=6)
+        waitTime, detourRatio, drivers_num, passengers_num, file_num=0)
     drivers_demand = [tuple(de) for de in drivers_df.values]
     drivers = [Driver(id, de) for id, de in enumerate(drivers_demand, start=1)]
 
@@ -84,12 +86,29 @@ def initParticipants(waitTime=4, detourRatio=0.5, drivers_num=40, passengers_num
     return drivers, passengers
 
 
-def carpool(select):
-    drivers, passengers = initParticipants()
+def carpool(select, drivers, passengers):
     dcaMat, pcaMat = Tool.getCandidates(drivers, passengers)
     if select == 1:
-        AlgorithmCFA(drivers, dcaMat, passengers, pcaMat)
+        CFA = AlgorithmCFA(drivers, dcaMat, passengers, pcaMat)
+        return CFA.getTotalUtility()
+    elif select == 3:
+        OTMBM = AlgorithmOTMBM(drivers, dcaMat, passengers, pcaMat)
+        return OTMBM.getTotalUtility()
 
 
 if __name__ == '__main__':
-    carpool(1)
+    res1, res2 = 0, 0
+    total = 1
+    for _ in range(total):
+        for _ in range(1):
+            drivers, passengers = initParticipants(
+                waitTime=4, detourRatio=0.5, drivers_num=300, passengers_num=600)
+            res1 += carpool(1, copy.deepcopy(drivers),
+                            copy.deepcopy(passengers))
+            res2 += carpool(3, copy.deepcopy(drivers),
+                            copy.deepcopy(passengers))
+    res1 = res1 / total
+    res2 = res2 / total
+    print('alogrithm CFA: ', res1)
+    print('alogrithm OTMBM: ', res2)
+    print(res1 / res2)

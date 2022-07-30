@@ -1,4 +1,3 @@
-from copy import deepcopy
 from auctioneer import Auctioneer
 from coalition import Coalition
 from passenger import Passenger
@@ -36,7 +35,10 @@ class AlgorithmCFA:
                     self.notInGroupBranch(p, driVec)
             if self.opt - tmp < 1:
                 break
-        print(self.opt)
+        # print('alogrithm CFA: ', self.opt)
+
+    def getTotalUtility(self):
+        return self.opt
 
     def initAllocation(self):
         # find a suitable driver for each passenger

@@ -13,6 +13,9 @@ class Coalition:
         self.route = Route(driver)
         self.curPassengers = []
 
+    def getDriver(self):
+        return self.driver
+
     def getUnitBid(self):
         unitBid = 0
         if len(self.curPassengers):
