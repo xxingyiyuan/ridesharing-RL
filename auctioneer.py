@@ -1,3 +1,5 @@
+from lib2to3.pgen2 import driver
+from re import L
 from driver import Driver
 from coalition import Coalition
 from settings import RATIO_EXCLUDE_PLATFORM_CHARGE
@@ -43,9 +45,76 @@ class Auctioneer:
                                   (unitPayment, payoff), False)
         return self.getTotalUtility()
 
-    # participants: (coalition, driver), price: (unitPayment, payoff), isWin
+    def auction2(self):
+        drivers, coalitions = self.exclude()
+        drivers.sort(key=lambda driver: driver.askPrice / driver.sPassengerNum)
+        coalitions.sort(
+            key=lambda coalition: coalition.getUnitBid(), reverse=True)
+        size = len(drivers)
+        k = -1
+        for i in range(size):
+            if coalitions[i].getUnitBid() * RATIO_EXCLUDE_PLATFORM_CHARGE >= drivers[i].askPrice / drivers[i].sPassengerNum:
+                k = i
+            else:
+                break
+        if k > 0:
+            alpha = k
+            beta = k
+            for i in range(alpha + 1, size):
+                if coalitions[i].getUnitBid() * RATIO_EXCLUDE_PLATFORM_CHARGE >= drivers[k].askPrice / drivers[k].sPassengerNum:
+                    alpha = i
+            for i in range(beta + 1, size):
+                if coalitions[k].getUnitBid() * RATIO_EXCLUDE_PLATFORM_CHARGE >= drivers[i].askPrice / drivers[i].sPassengerNum:
+                    beta = i
+            if self.countWinner(drivers, coalitions, alpha, k) > self.countWinner(drivers, coalitions, k, beta):
+                self.determineWinner(drivers, coalitions, alpha, k)
+            else:
+                self.determineWinner(drivers, coalitions, k, beta)
+        else:
+            self.determineWinner(drivers, coalitions, 0, 0)
+        return self.getTotalUtility()
+
+    def exclude(self):
+        drivers, coalitions = self.drivers, list(self.coalitions.values())
+        newDrivers, newCoalitions = [], []
+        nums = len(drivers)
+        for i in range(nums):
+            driver = drivers[i]
+            coalition = coalitions[i]
+            if driver.sPassengerNum == 0:
+                continue
+            elif coalition.getUnitBid()*coalition.getPassengerNum()*RATIO_EXCLUDE_PLATFORM_CHARGE < driver.askPrice:
+                continue
+            else:
+                newDrivers.append(driver)
+                newCoalitions.append(coalition)
+        return newDrivers, newCoalitions
+
+    def countWinner(self, drivers, coalitions, b, s):
+        count = 0
+        driverMap = {}
+        for i in range(s):
+            driverMap[drivers[i].id] = drivers[i]
+        for i in range(b):
+            if coalitions[i].id in driverMap:
+                count += 1
+        return count
+
+    def determineWinner(self, drivers, coalitions, b, s):
+        driverMap = {}
+        unitPayment = coalitions[b].getUnitBid()
+        for i in range(s):
+            driverMap[drivers[i].id] = drivers[i]
+        for i in range(b):
+            driver = coalitions[i].getDriver()
+            if driver.id in driverMap:
+                self.updateResult(
+                    (coalitions[i], driver), (unitPayment, driver.askPrice), True)
+            else:
+                self.updateResult((coalitions[i], driver), (0, 0), False)
 
     def updateResult(self, participants: tuple, price: tuple, isWin: bool):
+        # participants: (coalition, driver), price: (unitPayment, payoff), isWin
         coalition, driver = participants
         unitPayment, payoff = price
         # update passengers

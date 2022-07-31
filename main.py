@@ -8,9 +8,10 @@ from driver import Driver
 from passenger import Passenger
 from tool import Tool
 from algorithmCFA import AlgorithmCFA
+from algorithmTSG import AlgorithmTSG
 from algorithmOTMBM import AlgorithmOTMBM
 # dataset
-G = Generator(*settings.guangzhouRange)
+G = Generator(*settings.beijingRange)
 
 
 def initDemands(waitTime, detourRatio, drivers_num, passengers_num, file_num=0, isSave=False):
@@ -91,13 +92,16 @@ def carpool(select, drivers, passengers):
     if select == 1:
         CFA = AlgorithmCFA(drivers, dcaMat, passengers, pcaMat)
         return CFA.getTotalUtility()
+    elif select == 2:
+        TSG = AlgorithmTSG(drivers, dcaMat, passengers, pcaMat)
+        return TSG.getTotalUtility()
     elif select == 3:
         OTMBM = AlgorithmOTMBM(drivers, dcaMat, passengers, pcaMat)
         return OTMBM.getTotalUtility()
 
 
 if __name__ == '__main__':
-    res1, res2 = 0, 0
+    res1, res2, res3 = 0, 0, 0
     total = 1
     for _ in range(total):
         for _ in range(1):
@@ -105,10 +109,13 @@ if __name__ == '__main__':
                 waitTime=4, detourRatio=0.5, drivers_num=300, passengers_num=600)
             res1 += carpool(1, copy.deepcopy(drivers),
                             copy.deepcopy(passengers))
-            res2 += carpool(3, copy.deepcopy(drivers),
+            res2 += carpool(2, copy.deepcopy(drivers),
+                            copy.deepcopy(passengers))
+            res3 += carpool(3, copy.deepcopy(drivers),
                             copy.deepcopy(passengers))
     res1 = res1 / total
     res2 = res2 / total
+    res3 = res3 / total
     print('alogrithm CFA: ', res1)
-    print('alogrithm OTMBM: ', res2)
-    print(res1 / res2)
+    print('alogrithm TSG: ', res2, (res1 / res2 - 1) * 100)
+    print('alogrithm OTMBM: ', res3, (res1 / res3 - 1) * 100)

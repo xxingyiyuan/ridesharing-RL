@@ -241,4 +241,9 @@ class Route:
 
 
 if __name__ == '__main__':
-    pass
+    driDemand = (116.43844, 39.85513, 116.42189, 39.91666, 5, 0.5)
+    driver = Driver(33, driDemand)
+    route1 = Route(driver)
+    route2 = Route(driver)
+    print(route1 == route2) // False
+    print(route1.driver == route2.driver) // True
