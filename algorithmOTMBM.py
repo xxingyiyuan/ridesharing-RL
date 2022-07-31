@@ -2,8 +2,7 @@ from auctioneer import Auctioneer
 from coalition import Coalition
 from passenger import Passenger
 from driver import Driver
-from tool import Tool
-from settings import SPEED, PRICE_PER_KILOMETER, PRICE_PER_MINUTE, DISTCOUNT
+from settings import PRICE_PER_KILOMETER, PRICE_PER_MINUTE, DISTCOUNT
 
 
 class AlgorithmOTMBM:

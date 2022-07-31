@@ -1,9 +1,6 @@
 from auctioneer import Auctioneer
 from coalition import Coalition
 from packing import Packing
-from passenger import Passenger
-from driver import Driver
-from tool import Tool
 
 
 class AlgorithmTSG:

@@ -18,6 +18,7 @@ train_base = 10
 train_bais = MEMORY_SIZE
 episodes = 20000
 
+
 def train():
     total_steps = 0
     epi_maxUti = []
@@ -57,7 +58,7 @@ def train():
 
             if flag == 2:
                 # print('episodes: {}, steps: {}, lastUti: {}, accumuReward: {}, totalSteps: {}, opt: {}'.format(
-                    # i, step, curPassUti, accumuReward, total_steps, opt))
+                # i, step, curPassUti, accumuReward, total_steps, opt))
                 break
             if flag == 1:
                 if maxUti > opt:
@@ -71,8 +72,8 @@ def train():
                 #     i, step, curPassUti, accumuReward, total_steps, opt))
                 break
             observation = observation_
-    print(np.mean(epi_time))    
-    print(opt,total_steps)
+    print(np.mean(epi_time))
+    print(opt, total_steps)
     # Tool.storeData(RL.cost_his, 'cost_{}'.format(file_num))
     # Tool.storeData(epi_accumuReward, 'reward_{}'.format(file_num))
     # Tool.plotData(epi_accumuReward, ('Episode', 'Reward'),
