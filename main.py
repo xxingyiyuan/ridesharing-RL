@@ -10,6 +10,7 @@ from tool import Tool
 from algorithmCFA import AlgorithmCFA
 from algorithmTSG import AlgorithmTSG
 from algorithmOTMBM import AlgorithmOTMBM
+from algorithmDRL import AlgorithmDRL
 # dataset
 G = Generator(*settings.beijingRange)
 
@@ -61,61 +62,56 @@ def initDemands(waitTime, detourRatio, drivers_num, passengers_num, file_num=0, 
     passengers_df['detourRatio'] = detourRatio
     passengers_df['waitTime'] = waitTime
 
-    return drivers_df, passengers_df
-
-
-def initParticipants(waitTime=4, detourRatio=0.5, drivers_num=50, passengers_num=100):
-    """_summary_
-
-    Args:
-        waitTime (int, optional): _description_. Defaults to 4.
-        detourRatio (float, optional): _description_. Defaults to 0.5.
-        drivers_num (int, optional): _description_. Defaults to 50.
-        passengers_num (int, optional): _description_. Defaults to 100.
-
-    Returns:
-        _type_: _description_
-    """
-    drivers_df, passengers_df = initDemands(
-        waitTime, detourRatio, drivers_num, passengers_num, file_num=0)
     drivers_demand = [tuple(de) for de in drivers_df.values]
-    drivers = [Driver(id, de) for id, de in enumerate(drivers_demand, start=1)]
-
     passengers_demand = [tuple(de) for de in passengers_df.values]
+    return drivers_demand, passengers_demand
+
+
+def initParticipants(drivers_demand, passengers_demand):
+    drivers = [Driver(id, de) for id, de in enumerate(drivers_demand, start=1)]
     passengers = [Passenger(id, de)
                   for id, de in enumerate(passengers_demand, start=1)]
-    return drivers, passengers
-
-
-def carpool(select, drivers, passengers):
     dcaMat, pcaMat = Tool.getCandidates(drivers, passengers)
+    return drivers, dcaMat, passengers, pcaMat
+
+
+def carpool(select, drivers_demand, passengers_demand):
+
     if select == 1:
+        drivers, dcaMat, passengers, pcaMat = initParticipants(
+            drivers_demand, passengers_demand)
         CFA = AlgorithmCFA(drivers, dcaMat, passengers, pcaMat)
         return CFA.getTotalUtility()
     elif select == 2:
+        drivers, dcaMat, passengers, pcaMat = initParticipants(
+            drivers_demand, passengers_demand)
         TSG = AlgorithmTSG(drivers, dcaMat, passengers, pcaMat)
         return TSG.getTotalUtility()
     elif select == 3:
+        drivers, dcaMat, passengers, pcaMat = initParticipants(
+            drivers_demand, passengers_demand)
         OTMBM = AlgorithmOTMBM(drivers, dcaMat, passengers, pcaMat)
         return OTMBM.getTotalUtility()
+    elif select == 4:
+        DRL = AlgorithmDRL(drivers_demand, passengers_demand)
+        return DRL.getTotalUtility()
 
 
 if __name__ == '__main__':
-    res1, res2, res3 = 0, 0, 0
-    total = 1
-    for _ in range(total):
-        for _ in range(1):
-            drivers, passengers = initParticipants(
-                waitTime=4, detourRatio=0.5, drivers_num=300, passengers_num=600)
-            res1 += carpool(1, copy.deepcopy(drivers),
-                            copy.deepcopy(passengers))
-            res2 += carpool(2, copy.deepcopy(drivers),
-                            copy.deepcopy(passengers))
-            res3 += carpool(3, copy.deepcopy(drivers),
-                            copy.deepcopy(passengers))
-    res1 = res1 / total
-    res2 = res2 / total
-    res3 = res3 / total
-    print('alogrithm CFA: ', res1)
-    print('alogrithm TSG: ', res2, (res1 / res2 - 1) * 100)
-    print('alogrithm OTMBM: ', res3, (res1 / res3 - 1) * 100)
+    total = 10
+    res = np.zeros((total, 4))
+    for i in range(total):
+        for _ in range(6):
+            drivers_demand, passengers_demand = initDemands(
+                waitTime=4, detourRatio=0.5, drivers_num=50, passengers_num=100)
+            res[i][0] += carpool(1, drivers_demand, passengers_demand)
+            res[i][1] += carpool(2, drivers_demand, passengers_demand)
+            res[i][2] += carpool(3, drivers_demand, passengers_demand)
+            res[i][3] += carpool(4, drivers_demand, passengers_demand)
+        print(res[i])
+
+    # avg = np.sum(res, axis=0) / total
+    avg = np.sum(res, axis=0)
+    print(avg)
+    print('algorithm CFA: ', avg[0] / avg[1], avg[0] / avg[2])
+    print('algorithm DRL: ', avg[3] / avg[1], avg[3] / avg[2])

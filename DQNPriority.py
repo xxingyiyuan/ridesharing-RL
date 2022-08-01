@@ -150,6 +150,7 @@ class DQNPrioritizedReplay:
             prioritized=True,
             sess=None,
     ):
+
         self.n_actions = n_actions
         self.n_features = n_features
         self.lr = learning_rate
@@ -188,22 +189,24 @@ class DQNPrioritizedReplay:
         self.cost_his = []
 
     def _build_net(self):
+
         def build_layers(s, c_names, n_l1, w_initializer, b_initializer, trainable):
             with tf.compat.v1.variable_scope('l1'):
                 w1 = tf.compat.v1.get_variable('w1', [
-                                     self.n_features, n_l1], initializer=w_initializer, collections=c_names, trainable=trainable)
+                    self.n_features, n_l1], initializer=w_initializer, collections=c_names, trainable=trainable)
                 b1 = tf.compat.v1.get_variable('b1', [
-                                     1, n_l1], initializer=b_initializer, collections=c_names,  trainable=trainable)
+                    1, n_l1], initializer=b_initializer, collections=c_names,  trainable=trainable)
                 l1 = tf.nn.relu(tf.matmul(s, w1) + b1)
 
             with tf.compat.v1.variable_scope('l2'):
                 w2 = tf.compat.v1.get_variable('w2', [
-                                     n_l1, self.n_actions], initializer=w_initializer, collections=c_names,  trainable=trainable)
+                    n_l1, self.n_actions], initializer=w_initializer, collections=c_names,  trainable=trainable)
                 b2 = tf.compat.v1.get_variable('b2', [
-                                     1, self.n_actions], initializer=b_initializer, collections=c_names,  trainable=trainable)
+                    1, self.n_actions], initializer=b_initializer, collections=c_names,  trainable=trainable)
                 out = tf.matmul(l1, w2) + b2
             return out
 
+        tf.reset_default_graph()
         # ------------------ build evaluate_net ------------------
         self.s = tf.compat.v1.placeholder(
             tf.float32, [None, self.n_features], name='s')  # input
@@ -238,7 +241,8 @@ class DQNPrioritizedReplay:
         self.s_ = tf.compat.v1.placeholder(
             tf.float32, [None, self.n_features], name='s_')    # input
         with tf.compat.v1.variable_scope('target_net'):
-            c_names = ['target_net_params', tf.compat.v1.GraphKeys.GLOBAL_VARIABLES]
+            c_names = ['target_net_params',
+                       tf.compat.v1.GraphKeys.GLOBAL_VARIABLES]
             self.q_next = build_layers(
                 self.s_, c_names, n_l1, w_initializer, b_initializer, False)
 
@@ -256,7 +260,7 @@ class DQNPrioritizedReplay:
             self.memory_counter += 1
 
     def choose_action(self, observation, validIndex):
-        
+
         observation = observation[np.newaxis, :]
         if np.random.uniform() < self.epsilon:
             actions_value = self.sess.run(
@@ -267,7 +271,7 @@ class DQNPrioritizedReplay:
             actionIndex = validIndex[np.argmax(validValue)]
         else:
             # action = np.random.randint(0, self.n_actions)
-            actionIndex = int(np.random.choice(validIndex,size=1))
+            actionIndex = int(np.random.choice(validIndex, size=1))
         return actionIndex
 
     def learn(self):
@@ -309,9 +313,7 @@ class DQNPrioritizedReplay:
                                                     self.q_target: q_target})
 
         self.cost_his.append(self.cost)
-        self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
+        self.epsilon = self.epsilon + \
+            self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
         # self.epsilon = self.epsilon - 0.0001 if self.epsilon > 0.1 else 0.1
         self.learn_step_counter += 1
-
-
-        
