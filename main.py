@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import settings
 import random
-import copy
 from driver import Driver
 from passenger import Passenger
 from tool import Tool
@@ -13,6 +12,8 @@ from algorithmOTMBM import AlgorithmOTMBM
 from algorithmDRL import AlgorithmDRL
 # dataset
 G = Generator(*settings.beijingRange)
+# 取消科学计数法
+np.set_printoptions(suppress=True)
 
 
 def initDemands(waitTime, detourRatio, drivers_num, passengers_num, file_num=0, isSave=False):
@@ -48,7 +49,11 @@ def initDemands(waitTime, detourRatio, drivers_num, passengers_num, file_num=0, 
         # -----------------------------------------------
         drivers_df = G.generateRequests(total_num=drivers_num, flag=0)
         passengers_df = G.generateRequests(total_num=passengers_num, flag=1)
-
+    # add detour and waitTime
+    drivers_df['detourRatio'] = random.uniform(detourRatio, detourRatio + 0.1)
+    passengers_df['detourRatio'] = random.uniform(
+        detourRatio, detourRatio + 0.1)
+    passengers_df['waitTime'] = random.uniform(waitTime, waitTime + 1)
     # -----------------------------------------------
     # ---------------- store demands ----------------
     # -----------------------------------------------
@@ -57,10 +62,6 @@ def initDemands(waitTime, detourRatio, drivers_num, passengers_num, file_num=0, 
             drivers_num, file_num), sep=' ', header=None, index=False)
         passengers_df.to_csv('./data/passenger_requests/passenger_requests_{}_{}.txt'.format(
             passengers_num, file_num), sep=' ', header=None, index=False)
-    # add detour and waitTime
-    drivers_df['detourRatio'] = detourRatio
-    passengers_df['detourRatio'] = detourRatio
-    passengers_df['waitTime'] = waitTime
 
     drivers_demand = [tuple(de) for de in drivers_df.values]
     passengers_demand = [tuple(de) for de in passengers_df.values]
@@ -81,37 +82,34 @@ def carpool(select, drivers_demand, passengers_demand):
         drivers, dcaMat, passengers, pcaMat = initParticipants(
             drivers_demand, passengers_demand)
         CFA = AlgorithmCFA(drivers, dcaMat, passengers, pcaMat)
-        return CFA.getTotalUtility()
+        return CFA.collectData()
     elif select == 2:
         drivers, dcaMat, passengers, pcaMat = initParticipants(
             drivers_demand, passengers_demand)
         TSG = AlgorithmTSG(drivers, dcaMat, passengers, pcaMat)
-        return TSG.getTotalUtility()
+        return TSG.collectData()
     elif select == 3:
         drivers, dcaMat, passengers, pcaMat = initParticipants(
             drivers_demand, passengers_demand)
         OTMBM = AlgorithmOTMBM(drivers, dcaMat, passengers, pcaMat)
-        return OTMBM.getTotalUtility()
+        return OTMBM.collectData()
     elif select == 4:
         DRL = AlgorithmDRL(drivers_demand, passengers_demand)
-        return DRL.getTotalUtility()
+        return DRL.collectData()
 
 
 if __name__ == '__main__':
-    total = 10
-    res = np.zeros((total, 4))
+    total = 1
+    res = np.zeros((4, 5))
     for i in range(total):
         for _ in range(6):
             drivers_demand, passengers_demand = initDemands(
                 waitTime=4, detourRatio=0.5, drivers_num=50, passengers_num=100)
-            res[i][0] += carpool(1, drivers_demand, passengers_demand)
-            res[i][1] += carpool(2, drivers_demand, passengers_demand)
-            res[i][2] += carpool(3, drivers_demand, passengers_demand)
-            res[i][3] += carpool(4, drivers_demand, passengers_demand)
-        print(res[i])
-
-    # avg = np.sum(res, axis=0) / total
-    avg = np.sum(res, axis=0)
-    print(avg)
-    print('algorithm CFA: ', avg[0] / avg[1], avg[0] / avg[2])
-    print('algorithm DRL: ', avg[3] / avg[1], avg[3] / avg[2])
+            res1 = carpool(1, drivers_demand, passengers_demand)
+            res2 = carpool(2, drivers_demand, passengers_demand)
+            res3 = carpool(3, drivers_demand, passengers_demand)
+            res4 = carpool(4, drivers_demand, passengers_demand)
+            tmp = np.array([res1, res2, res3, res4])
+            print(tmp)
+            res += tmp
+    print(res)

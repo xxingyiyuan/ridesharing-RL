@@ -18,7 +18,7 @@ class AlgorithmTSG:
         self.run()
         end = time.clock()
         self.runningTime = end - start
-        print('alogrithm TSG: ', self.getTotalUtility())
+        # print('alogrithm TSG: ', self.getTotalUtility())
 
     def run(self):
         # stage 1:
@@ -26,7 +26,8 @@ class AlgorithmTSG:
         # reverse:True 降序
         candidatePackings.sort(
             key=lambda packing: packing.getWeight(), reverse=True)
-        for pack in candidatePackings:
+        while len(candidatePackings):
+            pack = candidatePackings.pop(0)
             if pack.isFeasible():
                 coalition = self.coalitions[pack.getDriver().id]
                 for p in pack.getPassengers():

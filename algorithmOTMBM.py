@@ -20,7 +20,7 @@ class AlgorithmOTMBM:
         self.run()
         end = time.clock()
         self.runningTime = end - start
-        print('alogrithm OTMBM: ', self.getTotalUtility())
+        # print('alogrithm OTMBM: ', self.getTotalUtility())
 
     def run(self):
         self.oneToManyMatching()

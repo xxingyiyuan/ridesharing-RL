@@ -1,3 +1,4 @@
+import time
 from auctioneer import Auctioneer
 from coalition import Coalition
 from passenger import Passenger
@@ -17,7 +18,10 @@ class AlgorithmCFA:
         for d in self.driList:
             self.coalitions[d.id] = Coalition(d)
         self.auctioneer = Auctioneer(self.driList, self.coalitions)
+        start = time.clock()
         self.run()
+        end = time.clock()
+        self.runningTime = end - start
 
     def run(self):
         self.initAllocation()
@@ -35,10 +39,21 @@ class AlgorithmCFA:
                     self.notInGroupBranch(p, driVec)
             if self.opt - tmp < 1:
                 break
-        # print('alogrithm CFA: ', self.opt)
 
-    def getTotalUtility(self):
-        return self.opt
+    def collectData(self):
+        res = [0]*5
+        for coalition in self.coalitions.values():
+
+            for p in coalition.curPassengers:
+                res[0] += p.getUtility()
+                if p.isWin:
+                    res[1] += 1
+            d = coalition.getDriver()
+            res[2] += d.getUtility()
+            if d.isWin:
+                res[3] += 1
+        res[4] = self.runningTime
+        return res
 
     def initAllocation(self):
         # find a suitable driver for each passenger
@@ -63,12 +78,11 @@ class AlgorithmCFA:
         minDist = float('inf')
         for d in driVec:
             coalition = self.coalitions[d.id]
-            if coalition.addPassenger(passenger):
+            if coalition.tryAddPassenger(passenger):
                 originDist = Tool.calNodeDist(passenger.getOrg(), d.getOrg())
                 if originDist < minDist:
                     minDist = originDist
                     bestDriver = d
-                coalition.removePassenger(passenger)
         return bestDriver
 
     def inGroupBranch(self, passenger, driVec):
@@ -79,7 +93,7 @@ class AlgorithmCFA:
         isLeave = False
         srcCoalition.removePassenger(passenger)
         cur = self.auctioneer.auction()
-        if cur >= tmp:
+        if cur > tmp:
             tmp = cur
             isLeave = True
 
@@ -88,6 +102,7 @@ class AlgorithmCFA:
             if srcCoalition.id == d.id:
                 continue
             coalition = self.coalitions[d.id]
+
             if coalition.addPassenger(passenger):
                 cur = self.auctioneer.auction()
                 if cur > tmp:
@@ -95,13 +110,14 @@ class AlgorithmCFA:
                     targeCoalition = coalition
                 # restore
                 coalition.removePassenger(passenger)
+
         # switch operation
         if targeCoalition:
             targeCoalition.addPassenger(passenger)
-            self.opt = self.auctioneer.auction()
-        # leave operation
-        elif isLeave:
-            self.opt = self.auctioneer.auction()
+        elif not isLeave:
+            srcCoalition.addPassenger(passenger)
+        self.auctioneer.auction()
+        self.opt = tmp
 
     def notInGroupBranch(self, passenger, driVec):
         targeCoalition = None
@@ -116,9 +132,15 @@ class AlgorithmCFA:
                     targeCoalition = coalition
                 # restore
                 coalition.removePassenger(passenger)
-                # self.auctioneer.auction()
 
         # join operation
         if targeCoalition:
             targeCoalition.addPassenger(passenger)
             self.opt = self.auctioneer.auction()
+
+    def getTotalUtility(self):
+        res = 0
+        for coalition in self.coalitions.values():
+            for p in coalition.curPassengers:
+                res += p.getUtility()
+        return res
