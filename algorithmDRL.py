@@ -3,7 +3,7 @@ from environmentDRL import Environment
 from tool import Tool
 from tqdm import tqdm
 import numpy as np
-from time import *
+import time
 
 
 class AlgorithmDRL:
@@ -24,11 +24,13 @@ class AlgorithmDRL:
         total_steps = 0
         epi_accumuReward = []
         opt = 0
+        res = None
         for _ in tqdm(range(episodes)):
             observation, curPassUti = env.resetEnv()
             step = 0
             maxUti = 0
             accumuReward = 0
+            start = time.clock()
             while True:
                 # choose action by epsilon-greedy policy
                 validIndex = env.candidateIndex
@@ -53,12 +55,14 @@ class AlgorithmDRL:
                 if flag == 2:
                     break
                 if flag == 1:
+                    end = time.clock()
                     if maxUti > opt:
                         opt = maxUti
+                        res = env.collectData(end - start)
                     epi_accumuReward.append(accumuReward)
                     break
                 observation = observation_
-        self.opt = opt
+        self.res = res
 
-    def getTotalUtility(self):
-        return self.opt
+    def collectData(self):
+        return self.res

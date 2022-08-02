@@ -29,8 +29,7 @@ class Driver:
         if self.sDist == 0:
             return 0
         else:
-            return self.sDist*FUEL_PRICE_PER_KILOMETER + \
-                self.getTime(self.sDist)*LABOUR_PRICE_PER_MINUTE
+            return self.sDist*FUEL_PRICE_PER_KILOMETER + self.getTime(self.sDist)*LABOUR_PRICE_PER_MINUTE
 
     def getTime(self, dist):
         return dist/SPEED
@@ -39,7 +38,7 @@ class Driver:
         if self.sDist == 0:
             return 0
         else:
-            return self.getShareTotalCost() - self.askPrice()
+            return self.getShareTotalCost() - self.askPrice
 
     def getOrg(self):
         return (self.demand[0], self.demand[1])

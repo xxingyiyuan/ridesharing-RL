@@ -1,6 +1,7 @@
 from auctioneer import Auctioneer
 from coalition import Coalition
 from packing import Packing
+import time
 
 
 class AlgorithmTSG:
@@ -13,7 +14,11 @@ class AlgorithmTSG:
         for d in self.driList:
             self.coalitions[d.id] = Coalition(d)
         self.auctioneer = Auctioneer(self.driList, self.coalitions)
+        start = time.clock()
         self.run()
+        end = time.clock()
+        self.runningTime = end - start
+        print('alogrithm TSG: ', self.getTotalUtility())
 
     def run(self):
         # stage 1:
@@ -51,5 +56,22 @@ class AlgorithmTSG:
                         candidatePackings.append(pack)
         return candidatePackings
 
+    def collectData(self):
+        res = [0]*5
+        for p in self.passList:
+            res[0] += p.getUtility()
+            if p.isWin:
+                res[1] += 1
+        for d in self.driList:
+            res[2] += d.getUtility()
+            if d.isWin:
+                res[3] += 1
+        res[4] = self.runningTime
+        return res
+
     def getTotalUtility(self):
-        return self.opt
+        res = 0
+        for coalition in self.coalitions.values():
+            for p in coalition.curPassengers:
+                res += p.getUtility()
+        return res

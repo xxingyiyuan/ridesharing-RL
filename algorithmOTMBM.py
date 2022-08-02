@@ -1,3 +1,4 @@
+import time
 from auctioneer import Auctioneer
 from coalition import Coalition
 from passenger import Passenger
@@ -15,12 +16,28 @@ class AlgorithmOTMBM:
         for d in self.driList:
             self.coalitions[d.id] = Coalition(d)
         self.auctioneer = Auctioneer(self.driList, self.coalitions)
+        start = time.clock()
         self.run()
+        end = time.clock()
+        self.runningTime = end - start
+        print('alogrithm OTMBM: ', self.getTotalUtility())
 
     def run(self):
         self.oneToManyMatching()
         self.pricing()
-        # print('alogrithm OTMM: ', self.getTotalUtility())
+
+    def collectData(self):
+        res = [0]*5
+        for p in self.passList:
+            res[0] += p.getUtility()
+            if p.isWin:
+                res[1] += 1
+        for d in self.driList:
+            res[2] += d.getUtility()
+            if d.isWin:
+                res[3] += 1
+        res[4] = self.runningTime
+        return res
 
     def oneToManyMatching(self):
         # (passenger ID, driver ID)

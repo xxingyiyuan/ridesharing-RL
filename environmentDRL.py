@@ -107,3 +107,16 @@ class Environment:
             actionIndex = self.actionMap[action]
             if actionIndex in self.candidateIndex:
                 self.candidateIndex.remove(actionIndex)
+
+    def collectData(self, runningTime):
+        res = [0]*5
+        for p in self.passengers:
+            res[0] += p.getUtility()
+            if p.isWin:
+                res[1] += 1
+        for d in self.drivers:
+            res[2] += d.getUtility()
+            if d.isWin:
+                res[3] += 1
+        res[4] = runningTime
+        return res

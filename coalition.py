@@ -3,6 +3,7 @@ from driver import Driver
 from passenger import Passenger
 from tool import Tool
 import settings
+import copy
 
 
 class Coalition:
@@ -25,6 +26,16 @@ class Coalition:
 
     def getPassengerNum(self):
         return len(self.curPassengers)
+
+    def tryAddPassenger(self, passenger: 'Passenger'):
+        # radium constraint
+        if Tool.calNodeDist(self.driver.getOrg(), passenger.getOrg()) > settings.RADIUS:
+            return False
+        # capacity constraint
+        if self.driver.getAvaliableSeats() < passenger.getRequiredSeats():
+            return False
+        newRoute = copy.deepcopy(self.route)
+        return newRoute.addPassenger(passenger)
 
     def addPassenger(self, passenger: 'Passenger') -> bool:
         # radium constraint
