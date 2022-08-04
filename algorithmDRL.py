@@ -24,7 +24,7 @@ class AlgorithmDRL:
         total_steps = 0
         epi_accumuReward = []
         opt = 0
-        res = None
+        res = [0]*5
         for _ in tqdm(range(episodes)):
             observation, curPassUti = env.resetEnv()
             step = 0
@@ -63,6 +63,7 @@ class AlgorithmDRL:
                     break
                 observation = observation_
         self.res = res
+        print(opt)
 
     def collectData(self):
         return self.res

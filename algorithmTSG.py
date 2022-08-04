@@ -2,6 +2,7 @@ from auctioneer import Auctioneer
 from coalition import Coalition
 from packing import Packing
 import time
+import random
 
 
 class AlgorithmTSG:
@@ -38,7 +39,8 @@ class AlgorithmTSG:
             if p.isSelect():
                 continue
             driVec = self.pcaMat[p.id - 1]
-            for d in driVec:
+            for _ in range(len(driVec)):
+                d = random.choice(driVec)
                 coalition = self.coalitions[d.id]
                 if coalition.addPassenger(p):
                     break

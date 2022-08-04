@@ -121,7 +121,7 @@ class Generator:
 
         while n < total_num:
             # 选择一个区域生成请求
-            origin_rid = np.random.randint(0, 121)
+            origin_rid = np.random.randint(0, self.ROW_NUM*self.COL_NUM)
             if self.pickup_counts[origin_rid] == 0:
                 continue
             # 在该区域内生成的请求数量（满足泊松分布）
