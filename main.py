@@ -93,9 +93,9 @@ def getPartition(leftbottom, regionShape, squreSize):
 def generateFiles(datasetName, datasetSettings, fileNums=[0], drivers_num=40, passengers_num=80):
     # 生成request文件
     filepath, leftbottom, regionShape, squreSize = datasetSettings
-    leftbottoms = getPartition(leftbottom, regionShape, squreSize)
+    # leftbottoms = getPartition(leftbottom, regionShape, squreSize)
     for i in fileNums:
-        leftbottom = random.choice(leftbottoms)
+        # leftbottom = random.choice(leftbottoms)
         generator = Generator(filepath, leftbottom, regionShape, squreSize)
         drivers_df = generator.generateRequests(total_num=drivers_num, flag=0)
         passengers_df = generator.generateRequests(
@@ -130,20 +130,20 @@ def collectData(datasetName, fileNum, waitTime, detourRatio, drivers_num, passen
     res[1] = carpool(2, drivers_demand, passengers_demand)
     res[2] = carpool(3, drivers_demand, passengers_demand)
     res[3] = carpool(4, drivers_demand, passengers_demand)
-    print(res)
+    # print(res)
     return res
 
 
-def test(datasetSettings, waitTime, detourRatio):
-    generator = Generator(*datasetSettings)
-    drivers_demand, passengers_demand = initDemands(
-        generator, waitTime, detourRatio)
-    res = np.zeros((4, 5))
-    res[0] = carpool(1, drivers_demand, passengers_demand)
-    res[1] = carpool(2, drivers_demand, passengers_demand)
-    res[2] = carpool(3, drivers_demand, passengers_demand)
-    res[3] = carpool(4, drivers_demand, passengers_demand)
-    print(res)
+# def test(datasetSettings, waitTime, detourRatio):
+#     generator = Generator(*datasetSettings)
+#     drivers_demand, passengers_demand = initDemands(
+#         generator, waitTime, detourRatio)
+#     res = np.zeros((4, 5))
+#     res[0] = carpool(1, drivers_demand, passengers_demand)
+#     res[1] = carpool(2, drivers_demand, passengers_demand)
+#     res[2] = carpool(3, drivers_demand, passengers_demand)
+#     res[3] = carpool(4, drivers_demand, passengers_demand)
+#     print(res)
 
 
 if __name__ == '__main__':
@@ -152,27 +152,40 @@ if __name__ == '__main__':
         'guangzhou': settings.guangzhouRange,
         'newyork': settings.newyorkRange
     }
-    datasetName = 'beijing'
+    datasetName = 'newyork'
 
     defaultWaitTime = 4
-    defaultDetourRatio = 0.5
+    defaultDetourRatio = 0.4
 
-    fileNums = [0]
-    drivers_num = 30
+    fileNums = [i for i in range(5)]
+    drivers_num = 40
     passengers_num = 80
-    # generateFiles(datasetName, dataset[datasetName], fileNums, drivers_num, passengers_num)
-    waitTime = defaultWaitTime
-    for detourRatio in [0.2, 0.3, 0.4, 0.5, 0.6]:
+    # 生成请求
+    # generateFiles(datasetName, dataset[datasetName],
+    #               fileNums, drivers_num, passengers_num)
+
+    # waitTime = defaultWaitTime
+    # for detourRatio in [0.2, 0.3, 0.4, 0.5, 0.6]:
+    #     res = np.zeros((4, 5))
+    #     for file_num in fileNums:
+    #         tmp = collectData(datasetName, file_num, waitTime,
+    #                           detourRatio, drivers_num, passengers_num)
+    #         np.savetxt('./result/{}/detourRatio/file{}-waitTime={}-detourRatio={}.csv'.format(
+    #             datasetName, file_num, waitTime, detourRatio), tmp, delimiter=',', fmt='%.3f')
+    #         res += tmp
+    #     # total result
+    #     np.savetxt('./result/{}/detourRatio/total-waitTime={}-detourRatio={}.csv'.format(
+    #         datasetName, waitTime, detourRatio), res, delimiter=',', fmt='%.3f')
+
+    detourRatio = defaultDetourRatio
+    for waitTime in range(2, 3):
+        res = np.zeros((4, 5))
         for file_num in fileNums:
             tmp = collectData(datasetName, file_num, waitTime,
                               detourRatio, drivers_num, passengers_num)
-            np.savetxt('./result/{}/detourRatio/file{}-waitTime={}-detourRatio={}.csv'.format(
+            np.savetxt('./result/{}/waitTime/file{}-waitTime={}-detourRatio={}.csv'.format(
                 datasetName, file_num, waitTime, detourRatio), tmp, delimiter=',', fmt='%.3f')
-
-    # detourRatio = defaultDetourRatio
-    # for waitTime in range(3, 7):
-    #     for file_num in range(1):
-    #         tmp = collectData(datasetName, file_num, waitTime, detourRatio)
-    #         np.savetxt('./result/{}/file{}-waitTime={}-detourRatio={}.csv'.format(
-    #             datasetName, file_num, waitTime, detourRatio), tmp, delimiter=',', fmt='%.3f')
-    # np.savetxt('./result/{}/waitTime={}-detourRatio={}.csv'.format(datasetName, waitTime, detourRatio), res, delimiter=',', fmt='%.3f')
+            res += tmp
+        # total result
+        np.savetxt('./result/{}/waitTime/total-waitTime={}-detourRatio={}.csv'.format(
+            datasetName, waitTime, detourRatio), res, delimiter=',', fmt='%.3f')
