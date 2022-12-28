@@ -4,6 +4,7 @@ from tool import Tool
 from tqdm import tqdm
 import numpy as np
 import time
+from demand import Demand
 
 
 class AlgorithmDRL:
@@ -67,3 +68,11 @@ class AlgorithmDRL:
 
     def collectData(self):
         return self.res
+
+
+if __name__ == '__main__':
+    print('start')
+    drivers_demand, passengers_demand = Demand.loadDemand('newyork', 0, 5, 0.5)
+    DRL = AlgorithmDRL(drivers_demand, passengers_demand)
+    print(DRL.collectData())
+    print('end')

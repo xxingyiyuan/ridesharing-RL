@@ -10,6 +10,7 @@ from algorithmCFA import AlgorithmCFA
 from algorithmTSG import AlgorithmTSG
 from algorithmOTMBM import AlgorithmOTMBM
 from algorithmDRL import AlgorithmDRL
+from demand import Demand
 
 # 取消科学计数法
 np.set_printoptions(suppress=True)
@@ -147,6 +148,7 @@ def collectData(datasetName, fileNum, waitTime, detourRatio, drivers_num, passen
 
 
 if __name__ == '__main__':
+    demandInstance = Demand()
     dataset = {
         'beijing': settings.beijingRange,
         'guangzhou': settings.guangzhouRange,

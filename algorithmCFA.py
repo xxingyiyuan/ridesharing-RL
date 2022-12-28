@@ -4,6 +4,7 @@ from coalition import Coalition
 from passenger import Passenger
 from driver import Driver
 from tool import Tool
+from demand import Demand
 
 
 class AlgorithmCFA:
@@ -144,3 +145,11 @@ class AlgorithmCFA:
             for p in coalition.curPassengers:
                 res += p.getUtility()
         return res
+
+
+if __name__ == '__main__':
+    drivers_demand, passengers_demand = Demand.loadDemand('beijing', 0, 5, 0.5)
+    drivers, dcaMat, passengers, pcaMat = Demand.initParticipants(
+        drivers_demand, passengers_demand)
+    CFA = AlgorithmCFA(drivers, dcaMat, passengers, pcaMat)
+    print(CFA.collectData())
