@@ -3,7 +3,7 @@ from settings import SPEED, FUEL_PRICE_PER_KILOMETER, LABOUR_PRICE_PER_MINUTE
 
 
 class Driver:
-    def __init__(self, id, demand):
+    def __init__(self, id, demand, isVocational=False):
         # demand: (pickup_longitude, pickup_latitude, dropoff_longitude, dropoff_latitude, seatNum, detourRatio)
         self.id = id
         self.demand = demand
@@ -15,13 +15,17 @@ class Driver:
         self.sPassengerNum = 0
         self.payoff = 0
         self.isWin = False
+        self.isVocational = isVocational
 
     def getCurDist(self):
         return max(self.iDist, self.sDist)
 
     def getUtility(self):
         if self.isWin:
-            return self.payoff - self.getdetourCost()
+            if self.isVocational:
+                return self.payoff - self.getShareTotalCost()
+            else:
+                return self.payoff - self.getdetourCost()
         else:
             return 0
 

@@ -15,8 +15,12 @@ class Route:
         self.sDistMap = None
 
         src = Node(0, 0, dri.getOrg(), 0)
-        dst = Node(0, 1, dri.getDst(), Tool.calNodeDist(
-            dri.getOrg(), dri.getDst()))
+        if self.driver.isVocational:
+            # 职业司机的终点为虚拟节点，与前面节点之间的距离为0
+            dst = Node(0, 1, dri.getDst(), 0)
+        else:
+            dst = Node(0, 1, dri.getDst(), Tool.calNodeDist(
+                dri.getOrg(), dri.getDst()))
         self.nodePath.append(src)
         self.nodePath.append(dst)
 
@@ -58,8 +62,9 @@ class Route:
                 srcIdxVec.append(i)
 
     def insertSource(self, passenger: 'Passenger', srcIdx) -> bool:
-        dist = 0  # the distance bwtween the origin ndoe of driver and current node
+        dist = 0  # the distance bwtween the origin node of driver and current node
         distMap = {}
+        isVocational = self.driver.isVocational
         for i, node in enumerate(self.nodePath[1:], start=1):
             # update dist
             if i != srcIdx:
@@ -70,10 +75,14 @@ class Route:
                 # check waitTime constraint for the new passenger
                 if (dist/SPEED - passenger.getWaitTime()) > 0:
                     return False
-                dist += Tool.calNodeDist(passenger.getOrg(),
-                                         node.coordinate)
+                if isVocational and node.who == 0 and node.where == 1:
+                    # 职业司机的虚拟终点
+                    dist += 0
+                else:
+                    dist += Tool.calNodeDist(passenger.getOrg(),
+                                             node.coordinate)
 
-            # node.where = 0: an origin node, check waitTime constraint for other passenger
+            # node.where = 0: an origin node, check waitTime constraint for other passengers
             if node.where == 0:
                 if (dist/SPEED - self.idxMap[node.who].getWaitTime()) > 0:
                     return False
@@ -81,9 +90,10 @@ class Route:
                 distMap[node.who] = dist
             # node.where = 1: a destination node, check detour constraint for participants
             else:
-                # i = len(self.nodePath) - 1: it must be the destination node of driver, check detour constraint for the driver
-                if i == len(self.nodePath) - 1:
-                    if (dist - self.driver.iDist*(1+self.driver.getDetourRatio())) > 0:
+                # node.who == 0: it must be the destination node of driver, check detour constraint for the driver
+                if node.who == 0:
+                    # 只考虑兼职司机的绕路约束
+                    if not isVocational and (dist - self.driver.iDist*(1+self.driver.getDetourRatio())) > 0:
                         return False
                 # check detour constraint for other passengers
                 else:
@@ -106,48 +116,61 @@ class Route:
         passDist = 0  # the shared trip distance of passenger: check detour constraint for passenger
         isInsert = False  # i == srcIdx: True, i == dstIdx: False
         distMap = {}
+        isVocational = self.driver.isVocational
         for i, node in enumerate(self.nodePath[1:], start=1):
-            # case1:
+            # update dist
             if i == srcIdx and i == dstIdx:
-                dist += Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getOrg(
-                )) + passenger.iDist + Tool.calNodeDist(passenger.getDst(), node.coordinate)
-                isInsert = True
+                if isVocational and node.who == 0 and node.where == 1:
+                    dist += Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getOrg(
+                    )) + passenger.iDist
+                else:
+                    dist += Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getOrg(
+                    )) + passenger.iDist + Tool.calNodeDist(passenger.getDst(), node.coordinate)
             elif i == srcIdx:
                 dist += Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getOrg(
                 )) + Tool.calNodeDist(passenger.getOrg(), node.coordinate)
                 isInsert = True
             elif i == dstIdx:
-                dist += Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getDst(
-                )) + Tool.calNodeDist(passenger.getDst(), node.coordinate)
+                if isVocational and node.who == 0 and node.where == 1:
+                    dist += Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getDst(
+                    ))
+                else:
+                    dist += Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getDst(
+                    )) + Tool.calNodeDist(passenger.getDst(), node.coordinate)
             else:
-                dist += node.pcDist
+                if isVocational and node.who == 0 and node.where == 1:
+                    dist += 0
+                else:
+                    dist += node.pcDist
 
-            # check detour constraint for passenger
             if isInsert:
-                if i == srcIdx and i == dstIdx:
-                    isInsert = False
-                elif i == srcIdx:
+                if i == srcIdx:
                     passDist += Tool.calNodeDist(passenger.getOrg(),
                                                  node.coordinate)
                 elif i == dstIdx:
                     passDist += Tool.calNodeDist(
                         self.nodePath[i-1].coordinate, passenger.getDst())
+                    # check detour constraint for passenger
                     if passDist - passenger.iDist*(1+passenger.getDetourRatio()) > 0:
                         return False
                     isInsert = False
                 else:
                     passDist += node.pcDist
 
+            # check waittime constraint for other passengers
             if node.where == 0:
                 if (dist/SPEED - self.idxMap[node.who].getWaitTime()) > 0:
                     return False
                 distMap[node.who] = dist
             else:
-                if i == len(self.nodePath) - 1:
-                    if (dist - self.driver.iDist*(1+self.driver.getDetourRatio())) > 0:
+                # node.where == 1
+                if node.who == 0:
+                    # check detour constraint for part-time driver
+                    if not isVocational and (dist - self.driver.iDist*(1+self.driver.getDetourRatio())) > 0:
                         return False
                 else:
                     p = self.idxMap[node.who]
+                    # check detour constraint for other passengers
                     # dist - distMap[node.who]: the shared trip distance of p
                     if (dist - distMap[node.who] - p.iDist * (1+p.getDetourRatio())) > 0:
                         return False
@@ -159,21 +182,33 @@ class Route:
         sDistMap = {0: 0}
         passDist = 0  # the shared trip distance of new passenger
         isUpdate = False
+        isVocational = self.driver.isVocational
         for i, node in enumerate(self.nodePath[1:], start=1):
             tmp = 0  # the distance between the previous node and current node
             if i == srcIdx and i == dstIdx:
-                tmp = Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getOrg(
-                )) + passenger.iDist + Tool.calNodeDist(passenger.getDst(), node.coordinate)
+                if isVocational and node.who == 0 and node.where == 1:
+                    tmp = Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getOrg(
+                    )) + passenger.iDist
+                else:
+                    tmp = Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getOrg(
+                    )) + passenger.iDist + Tool.calNodeDist(passenger.getDst(), node.coordinate)
                 isUpdate = True
             elif i == srcIdx:
                 tmp = Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getOrg(
                 )) + Tool.calNodeDist(passenger.getOrg(), node.coordinate)
                 isUpdate = True
             elif i == dstIdx:
-                tmp = Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getDst(
-                )) + Tool.calNodeDist(passenger.getDst(), node.coordinate)
+                if isVocational and node.who == 0 and node.where == 1:
+                    tmp = Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getDst(
+                    ))
+                else:
+                    tmp = Tool.calNodeDist(self.nodePath[i-1].coordinate, passenger.getDst(
+                    )) + Tool.calNodeDist(passenger.getDst(), node.coordinate)
             else:
-                tmp = node.pcDist
+                if isVocational and node.who == 0 and node.where == 1:
+                    tmp = 0
+                else:
+                    tmp = node.pcDist
 
             # isUpdate: True for i = srcIdx, False for i = dstIdx
             # passDist: the shared trip distance of new passenger
@@ -195,7 +230,7 @@ class Route:
             for key in sDistMap.keys():
                 if(isAddMap[key]):
                     sDistMap[key] += tmp
-
+            #
             if node.where == 0:
                 isAddMap[node.who] = True
                 sDistMap[node.who] = 0
@@ -207,13 +242,17 @@ class Route:
 
     def updateRoute(self, passenger: 'Passenger', srcIdx, dstIdx):
         self.sDistMap = self.calShareDistances(passenger, srcIdx, dstIdx)
+        isVocational = self.driver.isVocational
         # update the PrCuDistance of nodePath[src] and nodePath[dst]
         srcNode = self.nodePath[srcIdx]
         srcNode.pcDist = Tool.calNodeDist(
             passenger.getOrg(), srcNode.coordinate)
         dstNode = self.nodePath[dstIdx]
-        dstNode.pcDist = Tool.calNodeDist(
-            passenger.getDst(), dstNode.coordinate)
+        if isVocational and dstNode.who == 0 and dstNode.where == 1:
+            dstNode.pcDist = 0
+        else:
+            dstNode.pcDist = Tool.calNodeDist(
+                passenger.getDst(), dstNode.coordinate)
 
         # insert destination node at dstIdx in nodePath
         if srcIdx == dstIdx:
